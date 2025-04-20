@@ -45,29 +45,53 @@
             }
         });
 
-        // 測試用CSV數據（因為在Poe環境中可能無法訪問外部文件）
-        const testCsvData = `id,nameId,name,image_url,hp,en,armor,pilot_series,ap,dp,sp_abil
-1,Alteisen,古鐵,./unit/images/alteisen.png,4200,120,1500,atx,3,1.5,100000`;
+        // CSV檔案的URL
+        const csvUrl = './unit/unit.csv';
+        const targetNameId = 'Alteisen'; // 要顯示的機體nameId
         
         // 在頁面載入後執行
         document.addEventListener('DOMContentLoaded', function() {
-            try {
-                // 使用內部CSV數據而不是從文件讀取
-                const result = Papa.parse(testCsvData, {
-                    header: true,
-                    skipEmptyLines: true
+            // 顯示載入中狀態
+            document.getElementById('loading-status').classList.remove('hidden');
+            
+            // 從外部URL讀取CSV
+            fetch(csvUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`無法載入CSV檔案 (${response.status} ${response.statusText})`);
+                    }
+                    return response.text();
+                })
+                .then(csvText => {
+                    // 解析CSV數據
+                    const result = Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true
+                    });
+                    
+                    if (!result.data || result.data.length === 0) {
+                        throw new Error('CSV檔案不包含任何資料');
+                    }
+                    
+                    // 查找nameId為Alteisen的機體
+                    const mechData = result.data.find(mech => mech.nameId === targetNameId);
+                    
+                    if (!mechData) {
+                        throw new Error(`找不到nameId為 "${targetNameId}" 的機體`);
+                    }
+                    
+                    // 顯示機體資料
+                    displayMechData(mechData);
+                })
+                .catch(error => {
+                    console.error('載入或解析CSV時出錯:', error);
+                    document.getElementById('error-message').textContent = `載入資料時發生錯誤: ${error.message}`;
+                    document.getElementById('error-message').classList.remove('hidden');
+                })
+                .finally(() => {
+                    // 隱藏載入中狀態
+                    document.getElementById('loading-status').classList.add('hidden');
                 });
-                
-                if (result.data && result.data.length > 0) {
-                    displayMechData(result.data[0]); // 顯示第一個機體
-                } else {
-                    throw new Error('CSV數據無效');
-                }
-            } catch (error) {
-                console.error('解析CSV數據時出錯:', error);
-                document.getElementById('error-message').textContent = `載入資料時發生錯誤: ${error.message}`;
-                document.getElementById('error-message').classList.remove('hidden');
-            }
         });
 
         // 解析特殊能力
@@ -332,6 +356,25 @@
             line-height: 1.4;
         }
         
+        /* 像素加載動畫 */
+        .pixel-spinner {
+            width: 20px;
+            height: 20px;
+            background-color: #88C0D0;
+            position: relative;
+            animation: pixel-spinner-animation 1s steps(8, end) infinite;
+        }
+        
+        @keyframes pixel-spinner-animation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .font-pixel {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+        }
+        
         /* 像素武器項目 */
         .weapon-item {
             position: relative;
@@ -559,6 +602,14 @@
         
         <!-- 錯誤訊息 -->
         <div id="error-message" class="bg-red-900/80 text-red-200 p-4 mb-4 rounded-lg hidden"></div>
+        
+        <!-- 載入狀態 -->
+        <div id="loading-status" class="bg-darkBlue/80 text-white p-4 mb-4 rounded-lg hidden">
+            <div class="flex items-center justify-center">
+                <div class="pixel-spinner mr-3"></div>
+                <span class="font-pixel">正在從 CSV 檔案讀取機體資料...</span>
+            </div>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- 第一格：機體圖片 -->

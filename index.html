@@ -217,6 +217,16 @@
             image-rendering: pixelated;
         }
         
+        /* 自適應高度的框架（不保持正方形） */
+        .frame-auto {
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #5E81AC;
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.75);
+            image-rendering: pixelated;
+            aspect-ratio: unset;
+        }
+        
         /* 像素邊框 */
         .frame::before {
             content: '';
@@ -470,7 +480,15 @@
         /* AP與出場點數容器調整高度 */
         .stats-container {
             height: auto !important;
-            min-height: 120px;
+            min-height: 0;
+            padding-bottom: 8px;
+        }
+        
+        /* 特殊能力容器調整高度 */
+        .abilities-container {
+            height: auto !important;
+            min-height: 0;
+            padding-bottom: 8px;
         }
         
         /* 特殊能力網格樣式 */
@@ -584,9 +602,9 @@
             </div>
             
             <!-- 第三格：AP、出場點數 -->
-            <div class="frame tech-panel rounded-lg p-4 flex flex-col stats-container">
+            <div class="frame-auto tech-panel rounded-lg p-4 flex flex-col stats-container">
                 <h2 class="section-header text-lg font-semibold mb-3">AP與出場點數</h2>
-                <div class="flex-grow flex flex-col space-y-6 overflow-y-auto p-3">
+                <div class="flex flex-col space-y-6 overflow-y-auto p-3">
                     <div>
                         <div class="flex items-center mb-2">
                             <span class="data-label font-medium mr-4">AP：</span>
@@ -609,9 +627,9 @@
             </div>
             
             <!-- 第四格：特殊能力 -->
-            <div class="frame tech-panel rounded-lg p-4 flex flex-col">
+            <div class="frame-auto tech-panel rounded-lg p-4 flex flex-col abilities-container">
                 <h2 class="section-header text-lg font-semibold mb-3">特殊能力</h2>
-                <div class="flex-grow overflow-y-auto">
+                <div class="overflow-y-auto">
                     <ul id="special-abilities" class="space-y-3">
                         <li class="data-item bg-baseGray/40 p-3 rounded-md loading-text">載入中</li>
                     </ul>

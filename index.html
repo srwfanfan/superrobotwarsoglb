@@ -109,27 +109,87 @@
             document.getElementById('mech-hp').textContent = mechData.hp;
             document.getElementById('mech-en').textContent = mechData.en;
             document.getElementById('mech-armor').textContent = mechData.armor;
-            document.getElementById('mech-pilot').textContent = mechData.pilot_series;
+            // 駕駛員系列映射
+            const pilotSeriesMap = {
+                'atx': 'ATX系列',
+                'sos': 'SOS系列',
+                'eoa': 'EOA系列',
+                'og': 'OG系列',
+                'default': '通用系列'
+            };
+            
+            // 顯示映射後的駕駛員系列名稱
+            const pilotSeries = mechData.pilot_series.toLowerCase();
+            document.getElementById('mech-pilot').textContent = pilotSeriesMap[pilotSeries] || pilotSeriesMap['default'];
 
-            // 顯示AP和出場點數
-            document.getElementById('mech-ap').textContent = mechData.ap;
-            document.getElementById('mech-dp').textContent = mechData.dp;
+            // 顯示AP和出場點數（藥丸形狀格子表示）
+            // AP處理 - 最大值為6
+            const apValue = parseFloat(mechData.ap);
+            const apContainer = document.getElementById('ap-pills');
+            apContainer.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                const pillClass = i <= apValue ? 'pill-filled' : 'pill-empty';
+                apContainer.innerHTML += `<div class="pill ${pillClass}"></div>`;
+            }
+            
+            // 出場點數處理 - 最大值為3
+            const dpValue = parseFloat(mechData.dp);
+            const dpContainer = document.getElementById('dp-pills');
+            dpContainer.innerHTML = '';
+            for (let i = 1; i <= 3; i++) {
+                let pillClass = 'pill-empty';
+                if (i < dpValue) {
+                    pillClass = 'pill-filled';
+                } else if (i === Math.ceil(dpValue) && dpValue % 1 !== 0) {
+                    // 處理半格情況（如1.5）
+                    pillClass = 'pill-half';
+                }
+                dpContainer.innerHTML += `<div class="pill ${pillClass}"></div>`;
+            }
 
-            // 解析並顯示特殊能力
-            const specialAbilities = parseSpecialAbilities(mechData.sp_abil);
+            // 顯示特殊能力（網格清單格式）
+            const abilString = mechData.sp_abil.toString().padStart(6, '0');
             const abilitiesList = document.getElementById('special-abilities');
             abilitiesList.innerHTML = '';
-
-            if (specialAbilities.length === 0) {
-                abilitiesList.innerHTML = '<li class="data-item bg-baseGray/40 p-3 rounded-md">無特殊能力</li>';
-            } else {
-                specialAbilities.forEach(ability => {
-                    const abilityItem = document.createElement('li');
-                    abilityItem.className = 'data-item bg-baseGray/40 p-3 rounded-md';
-                    abilityItem.innerHTML = `<span class="data-label font-medium">${ability.name}：</span><span class="data-value">${ability.description}</span>`;
-                    abilitiesList.appendChild(abilityItem);
-                });
+            
+            // 所有特殊能力的定義
+            const allAbilities = [
+                { name: '劍', index: 0 },
+                { name: '盾', index: 1 },
+                { name: '護罩', index: 2 },
+                { name: '分身', index: 3 },
+                { name: '變形', index: 4 },
+                { name: '變身', index: 5 }
+            ];
+            
+            // 創建特殊能力網格（2x3）
+            const abilitiesGrid = document.createElement('div');
+            abilitiesGrid.className = 'abilities-grid';
+            
+            // 每行兩個能力
+            for (let row = 0; row < 3; row++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'abilities-row';
+                
+                for (let col = 0; col < 2; col++) {
+                    const index = row * 2 + col;
+                    const ability = allAbilities[index];
+                    const hasAbility = abilString[ability.index] === '1';
+                    
+                    const abilityItem = document.createElement('div');
+                    abilityItem.className = 'ability-item';
+                    abilityItem.innerHTML = `
+                        <span class="data-label ability-name">${ability.name}：</span>
+                        <span class="ability-value ${hasAbility ? 'has-ability' : 'no-ability'}">${hasAbility ? '有' : '無'}</span>
+                    `;
+                    
+                    rowDiv.appendChild(abilityItem);
+                }
+                
+                abilitiesGrid.appendChild(rowDiv);
             }
+            
+            abilitiesList.appendChild(abilitiesGrid);
         }
     </script>
     <style>
@@ -364,6 +424,101 @@
             image-rendering: pixelated;
         }
         
+        /* 藥丸格子樣式 */
+        .pills-container {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        
+        .pill {
+            width: 24px;
+            height: 14px;
+            border-radius: 4px;
+        }
+        
+        /* AP藥丸樣式 - 藍色主調 */
+        #ap-pills .pill {
+            border: 2px solid #5E81AC;
+        }
+        
+        #ap-pills .pill-filled {
+            background-color: #88C0D0;
+        }
+        
+        #ap-pills .pill-half {
+            background: linear-gradient(to right, #88C0D0 50%, transparent 50%);
+        }
+        
+        /* 出場點數藥丸樣式 - 綠色主調 */
+        #dp-pills .pill {
+            border: 2px solid #8BAA70;
+        }
+        
+        #dp-pills .pill-filled {
+            background-color: #A3BE8C;
+        }
+        
+        #dp-pills .pill-half {
+            background: linear-gradient(to right, #A3BE8C 50%, transparent 50%);
+        }
+        
+        .pill-empty {
+            background-color: transparent;
+        }
+        
+        /* AP與出場點數容器調整高度 */
+        .stats-container {
+            height: auto !important;
+            min-height: 120px;
+        }
+        
+        /* 特殊能力網格樣式 */
+        .abilities-grid {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 8px;
+            padding: 10px;
+            background-color: #3B4252;
+            border-radius: 4px;
+        }
+        
+        .abilities-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .ability-item {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #434C5E;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 3px solid #5E81AC;
+        }
+        
+        .ability-name {
+            font-size: 14px;
+        }
+        
+        .ability-value {
+            font-family: 'VT323', monospace;
+            font-size: 24px;
+        }
+        
+        .has-ability {
+            color: #A3BE8C;
+            font-weight: bold;
+        }
+        
+        .no-ability {
+            color: #BF616A;
+        }
+        
         /* 像素化網格 */
         .pixel-grid::before {
             content: '';
@@ -422,23 +577,33 @@
                         <span id="mech-armor" class="data-value loading-text">載入中</span>
                     </div>
                     <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">可使用駕駛員系列：</span>
+                        <span class="data-label font-medium">駕駛員：</span>
                         <span id="mech-pilot" class="data-value loading-text">載入中</span>
                     </div>
                 </div>
             </div>
             
             <!-- 第三格：AP、出場點數 -->
-            <div class="frame tech-panel rounded-lg p-4 flex flex-col">
+            <div class="frame tech-panel rounded-lg p-4 flex flex-col stats-container">
                 <h2 class="section-header text-lg font-semibold mb-3">AP與出場點數</h2>
-                <div class="flex-grow flex flex-col space-y-4 overflow-y-auto">
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">AP：</span>
-                        <span id="mech-ap" class="data-value loading-text">載入中</span>
+                <div class="flex-grow flex flex-col space-y-6 overflow-y-auto p-3">
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="data-label font-medium mr-4">AP：</span>
+                            <span id="mech-ap" class="data-value hidden">3</span>
+                        </div>
+                        <div id="ap-pills" class="pills-container">
+                            <!-- 由JavaScript填充 -->
+                        </div>
                     </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">出場點數：</span>
-                        <span id="mech-dp" class="data-value loading-text">載入中</span>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="data-label font-medium mr-4">出場點數：</span>
+                            <span id="mech-dp" class="data-value hidden">1.5</span>
+                        </div>
+                        <div id="dp-pills" class="pills-container">
+                            <!-- 由JavaScript填充 -->
+                        </div>
                     </div>
                 </div>
             </div>

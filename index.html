@@ -102,7 +102,10 @@
             }
 
             // 顯示機體資料
-            document.getElementById('mech-name').textContent = mechData.name;
+            const mechNameElem = document.getElementById('mech-name');
+            mechNameElem.textContent = mechData.name;
+            mechNameElem.className = 'data-value-name'; // 使用新的放大樣式
+            
             document.getElementById('mech-hp').textContent = mechData.hp;
             document.getElementById('mech-en').textContent = mechData.en;
             document.getElementById('mech-armor').textContent = mechData.armor;
@@ -205,15 +208,24 @@
         /* 像素標籤和數值 */
         .data-label {
             font-family: 'Press Start 2P', cursive;
-            font-size: 12px;
+            font-size: 14px; /* 統一為14px */
             color: #88C0D0;
             text-shadow: 1px 1px 0px #000000;
         }
         
         .data-value {
             font-family: 'VT323', monospace;
-            font-size: 18px;
+            font-size: 24px; /* 統一為24px */
             color: #ECEFF4;
+        }
+        
+        /* 機體名稱樣式 */
+        .data-value-name {
+            font-family: 'VT323', monospace;
+            font-size: 24px; /* 保持24px */
+            color: #88C0D0; /* 保留藍色強調 */
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         
         /* 像素標題 */
@@ -323,7 +335,7 @@
         
         .weapon-header h3 {
             font-family: 'Press Start 2P', cursive;
-            font-size: 12px;
+            font-size: 14px; /* 統一為14px */
             color: #88C0D0;
             text-shadow: 1px 1px 0px #2E3440;
         }
@@ -335,7 +347,7 @@
         }
         
         .loading-text::after {
-            content: '_';
+            content: '';
             display: inline-block;
             animation: blink 1s step-end infinite;
         }
@@ -378,7 +390,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- 第一格：機體圖片 -->
             <div class="frame tech-panel rounded-lg p-4 flex flex-col">
-                <h2 class="section-header text-lg font-semibold mb-3">機體圖片</h2>
+                <h2 class="section-header text-lg font-semibold mb-3">機體</h2>
                 <div id="mech-image-container" class="flex-grow flex items-center justify-center bg-baseGray/40 overflow-hidden pixel-image-container">
                     <div class="text-techGray text-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">

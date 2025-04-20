@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機體資料頁面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+
+        // 檢測暗模式偏好
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // 測試用CSV數據（因為在Poe環境中可能無法訪問外部文件）
+        const testCsvData = `id,nameId,name,image_url,hp,en,armor,pilot_series,ap,dp,sp_abil
+1,Alteisen,古鐵,./unit/images/alteisen.png,4200,120,1500,atx,3,1.5,100000`;
+        
+        // 在頁面載入後執行
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // 使用內部CSV數據而不是從文件讀取
+                const result = Papa.parse(testCsvData, {
+                    header: true,
+                    skipEmptyLines: true
+                });
+                
+                if (result.data && result.data.length > 0) {
+                    displayMechData(result.data[0]); // 顯示第一個機體
+                } else {
+                    throw new Error('CSV數據無效');
+                }
+            } catch (error) {
+                console.error('解析CSV數據時出錯:', error);
+                document.getElementById('error-message').textContent = `載入資料時發生錯誤: ${error.message}`;
+                document.getElementById('error-message').classList.remove('hidden');
+            }
+        });
+
+        // 解析特殊能力
+        function parseSpecialAbilities(spAbilCode) {
+            const abilities = [
+                { id: 0, name: '劍', description: '近戰武器傷害+20%' },
+                { id: 1, name: '盾', description: '物理傷害減少30%' },
+                { id: 2, name: '護罩', description: '每回合恢復200HP' },
+                { id: 3, name: '分身', description: '迴避率+25%' },
+                { id: 4, name: '變形', description: '可切換戰鬥形態' },
+                { id: 5, name: '變身', description: '可完全變身為新形態' }
+            ];
+
+            const abilString = spAbilCode.toString().padStart(6, '0');
+            const activeAbilities = [];
+
+            for (let i = 0; i < 6; i++) {
+                if (abilString[i] === '1') {
+                    activeAbilities.push(abilities[i]);
+                }
+            }
+
+            return activeAbilities;
+        }
+
+        // 顯示機體資料
+        function displayMechData(mechData) {
+            // 顯示機體圖片
+            const imageContainer = document.getElementById('mech-image-container');
+            if (mechData.image_url) {
+                imageContainer.innerHTML = `<img src="${mechData.image_url}" alt="${mechData.name}" class="max-h-full max-w-full object-contain">`;
+            }
+
+            // 顯示機體資料
+            document.getElementById('mech-name').textContent = mechData.name;
+            document.getElementById('mech-hp').textContent = mechData.hp;
+            document.getElementById('mech-en').textContent = mechData.en;
+            document.getElementById('mech-armor').textContent = mechData.armor;
+            document.getElementById('mech-pilot').textContent = mechData.pilot_series;
+
+            // 顯示AP和出場點數
+            document.getElementById('mech-ap').textContent = mechData.ap;
+            document.getElementById('mech-dp').textContent = mechData.dp;
+
+            // 解析並顯示特殊能力
+            const specialAbilities = parseSpecialAbilities(mechData.sp_abil);
+            const abilitiesList = document.getElementById('special-abilities');
+            abilitiesList.innerHTML = '';
+
+            if (specialAbilities.length === 0) {
+                abilitiesList.innerHTML = '<li class="bg-white dark:bg-gray-700 p-3 rounded-md">無特殊能力</li>';
+            } else {
+                specialAbilities.forEach(ability => {
+                    const abilityItem = document.createElement('li');
+                    abilityItem.className = 'bg-white dark:bg-gray-700 p-3 rounded-md';
+                    abilityItem.innerHTML = `<span class="font-medium">${ability.name}：</span><span>${ability.description}</span>`;
+                    abilitiesList.appendChild(abilityItem);
+                });
+            }
+        }
+    </script>
+    <style>
+        .frame {
+            aspect-ratio: 1 / 1;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 transition-colors duration-200">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-2xl font-bold text-primary mb-6">機體資料頁面</h1>
+        
+        <!-- 錯誤訊息 -->
+        <div id="error-message" class="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 p-4 mb-4 rounded-lg hidden"></div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 第一格：機體圖片 -->
+            <div class="frame bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700 shadow-sm flex flex-col">
+                <h2 class="text-lg font-semibold mb-2 text-primary">機體圖片</h2>
+                <div id="mech-image-container" class="flex-grow flex items-center justify-center bg-white dark:bg-gray-700 rounded-md overflow-hidden">
+                    <div class="text-gray-400 dark:text-gray-500 text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p class="mt-2">載入中...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第二格：機體資料 -->
+            <div class="frame bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700 shadow-sm flex flex-col">
+                <h2 class="text-lg font-semibold mb-2 text-primary">機體資料</h2>
+                <div class="flex-grow flex flex-col space-y-2 overflow-y-auto">
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">機體名稱：</span>
+                        <span id="mech-name">載入中...</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">HP：</span>
+                        <span id="mech-hp">載入中...</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">EN：</span>
+                        <span id="mech-en">載入中...</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">裝甲：</span>
+                        <span id="mech-armor">載入中...</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">可使用駕駛員系列：</span>
+                        <span id="mech-pilot">載入中...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第三格：AP、出場點數 -->
+            <div class="frame bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700 shadow-sm flex flex-col">
+                <h2 class="text-lg font-semibold mb-2 text-primary">AP與出場點數</h2>
+                <div class="flex-grow flex flex-col space-y-4 overflow-y-auto">
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">AP：</span>
+                        <span id="mech-ap">載入中...</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">出場點數：</span>
+                        <span id="mech-dp">載入中...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第四格：特殊能力 -->
+            <div class="frame bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700 shadow-sm flex flex-col">
+                <h2 class="text-lg font-semibold mb-2 text-primary">特殊能力</h2>
+                <div class="flex-grow overflow-y-auto">
+                    <ul id="special-abilities" class="space-y-2">
+                        <li class="bg-white dark:bg-gray-700 p-3 rounded-md">載入中...</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 第五格：武器列表 -->
+            <div class="frame bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700 shadow-sm flex flex-col">
+                <h2 class="text-lg font-semibold mb-2 text-primary">武器列表</h2>
+                <div class="flex-grow overflow-y-auto">
+                    <ul class="space-y-2">
+                        <li class="bg-white dark:bg-gray-700 p-3 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            雙聯裝光束炮
+                        </li>
+                        <li class="bg-white dark:bg-gray-700 p-3 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            高能光束劍
+                        </li>
+                        <li class="bg-white dark:bg-gray-700 p-3 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            頭部火神砲
+                        </li>
+                        <li class="bg-white dark:bg-gray-700 p-3 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            反物質導彈
+                        </li>
+                        <li class="bg-white dark:bg-gray-700 p-3 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                            光束連射砲
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 第六格：武器資料 -->
+            <div class="frame bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700 shadow-sm flex flex-col">
+                <h2 class="text-lg font-semibold mb-2 text-primary">武器資料</h2>
+                <div class="flex-grow flex flex-col space-y-2 overflow-y-auto">
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <h3 class="font-bold">雙聯裝光束炮</h3>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">攻擊力：</span>
+                        <span>3200</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">射程：</span>
+                        <span>1-5</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">彈藥：</span>
+                        <span>∞</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">EN消耗：</span>
+                        <span>45</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">命中率：</span>
+                        <span>85%</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-3 rounded-md">
+                        <span class="font-medium">特殊效果：</span>
+                        <span>對空 +15% 傷害</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

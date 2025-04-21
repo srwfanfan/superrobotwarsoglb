@@ -123,37 +123,66 @@
         .dark .special-ability-box {
             background: rgba(61, 123, 202, 0.2);
         }
+        
+        /* 能力值格子樣式 */
+        .stat-pill {
+            height: 16px;
+            width: 100%;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .dark .stat-pill {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-fill-pill {
+            height: 100%;
+            background-color: #3D7BCA;
+            border-radius: 8px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: width 0.5s ease;
+        }
+        
+        .stat-fill-pill.filled {
+            box-shadow: 0 0 5px rgba(61, 123, 202, 0.8);
+        }
     </style>
 </head>
 <body class="bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
     <div class="container max-w-lg mx-auto px-4 py-6">
         <!-- 機體資料卡片 -->
-        <div class="bg-light-card dark:bg-dark-card rounded-lg p-5 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border mb-4">
+        <div class="bg-light-card bg-opacity-70 dark:bg-dark-card dark:bg-opacity-70 backdrop-blur-sm rounded-lg p-5 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border mb-4">
             <!-- 機體標題區 -->
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h1 class="font-bold text-2xl text-primary" id="unit-name">古鐵</h1>
-                    <p class="text-sm text-gray-600 dark:text-gray-400" id="name-id">alteisen</p>
                 </div>
             </div>
 
             <!-- 機體圖片 -->
-            <div class="relative w-full h-48 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md mb-4 overflow-hidden">
+            <div class="relative w-full h-48 flex items-center justify-center mb-4 overflow-hidden">
                 <img id="unit-image" src="./unit/images/alteisen.png" alt="古鐵" class="max-h-full object-contain">
             </div>
 
             <!-- 主要數值區 -->
             <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="bg-white dark:bg-gray-800 p-3 rounded-md shadow-md">
-                    <p class="text-xs text-gray-500 dark:text-gray-400">耐久</p>
+                <div class="bg-white bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-60 backdrop-blur-sm p-3 rounded-md shadow-md">
+                    <p class="text-xs text-gray-600 dark:text-gray-300">HP</p>
                     <p class="font-bold text-xl text-primary" id="hp-value">4200</p>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-3 rounded-md shadow-md">
-                    <p class="text-xs text-gray-500 dark:text-gray-400">能量</p>
+                <div class="bg-white bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-60 backdrop-blur-sm p-3 rounded-md shadow-md">
+                    <p class="text-xs text-gray-600 dark:text-gray-300">EN</p>
                     <p class="font-bold text-xl text-primary" id="en-value">120</p>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-3 rounded-md shadow-md">
-                    <p class="text-xs text-gray-500 dark:text-gray-400">裝甲</p>
+                <div class="bg-white bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-60 backdrop-blur-sm p-3 rounded-md shadow-md">
+                    <p class="text-xs text-gray-600 dark:text-gray-300">裝甲</p>
                     <p class="font-bold text-xl text-primary" id="armor-value">1500</p>
                 </div>
             </div>
@@ -165,31 +194,53 @@
                 </div>
             </div>
             
-            <!-- 能力值條區 -->
+            <!-- 能力值格子區 -->
             <div class="mb-4">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-sm font-medium">攻擊力 (AP)</span>
-                    <span class="text-sm font-bold text-primary" id="ap-value">3.0</span>
+                <div class="mb-1">
+                    <span class="text-sm font-medium">行動點 (AP)</span>
                 </div>
-                <div class="stat-bar mb-3">
-                    <div class="stat-fill" id="ap-bar" style="width: 60%"></div>
+                <div class="flex space-x-1 mb-3" id="ap-blocks">
+                    <!-- AP格子會由JavaScript生成 -->
                 </div>
                 
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-sm font-medium">防禦力 (DP)</span>
-                    <span class="text-sm font-bold text-primary" id="dp-value">1.5</span>
+                <div class="mb-1">
+                    <span class="text-sm font-medium">部署點 (DP)</span>
                 </div>
-                <div class="stat-bar">
-                    <div class="stat-fill" id="dp-bar" style="width: 30%"></div>
+                <div class="flex space-x-1" id="dp-blocks">
+                    <!-- DP格子會由JavaScript生成 -->
                 </div>
             </div>
 
             <!-- 特殊能力區 -->
             <div class="special-ability-box p-3 rounded-r-md">
-                <h3 class="font-bold text-sm mb-1">特殊能力</h3>
-                <div class="flex items-center justify-between">
-                    <p class="text-xs text-gray-600 dark:text-gray-400">特殊能力值</p>
-                    <p class="font-bold text-primary" id="sp-abil-value">100000</p>
+                <h3 class="font-bold text-sm mb-2">特殊能力</h3>
+                <div class="grid grid-cols-3 gap-2 text-sm">
+                    <div class="flex items-center">
+                        <span class="mr-1">劍:</span>
+                        <span id="ability-a" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-1">護罩:</span>
+                        <span id="ability-c" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-1">變形:</span>
+                        <span id="ability-e" class="font-medium"></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-sm mt-1">
+                    <div class="flex items-center">
+                        <span class="mr-1">盾:</span>
+                        <span id="ability-b" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-1">分身:</span>
+                        <span id="ability-d" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-1">變身:</span>
+                        <span id="ability-f" class="font-medium"></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -218,33 +269,106 @@
 
         // 填充頁面數據
         document.getElementById('unit-name').textContent = unitData.name;
-        document.getElementById('name-id').textContent = unitData.nameId;
         document.getElementById('pilot-series-display').textContent = unitData.pilot_series.toUpperCase();
         document.getElementById('hp-value').textContent = unitData.hp;
         document.getElementById('en-value').textContent = unitData.en;
         document.getElementById('armor-value').textContent = unitData.armor;
-        document.getElementById('ap-value').textContent = unitData.ap.toFixed(1);
-        document.getElementById('dp-value').textContent = unitData.dp.toFixed(1);
-        document.getElementById('sp-abil-value').textContent = unitData.sp_abil.toLocaleString();
+        // AP和DP值不再顯示為數字，而是顯示為格子
         
-        // 更新進度條
-        document.getElementById('ap-bar').style.width = (unitData.ap / 5 * 100) + '%';
-        document.getElementById('dp-bar').style.width = (unitData.dp / 5 * 100) + '%';
+        // 解析特殊能力值
+        const parseSpecialAbilities = (spAbilValue) => {
+            // 確保值是六位數字的字符串
+            const spAbilStr = String(spAbilValue).padStart(6, '0');
+            
+            // 解析每個位置的能力值，轉換為對應的「有」或「無」
+            const abilityLabels = {
+                a: spAbilStr[0] === '1' ? '有' : '無',
+                b: spAbilStr[1] === '1' ? '有' : '無',
+                c: spAbilStr[2] === '1' ? '有' : '無',
+                d: spAbilStr[3] === '1' ? '有' : '無',
+                e: spAbilStr[4] === '1' ? '有' : '無',
+                f: spAbilStr[5] === '1' ? '有' : '無'
+            };
+            
+            // 設置每個能力的顯示值
+            document.getElementById('ability-a').textContent = abilityLabels.a;
+            document.getElementById('ability-a').classList.add(abilityLabels.a === '有' ? 'text-green-500' : 'text-gray-500');
+            
+            document.getElementById('ability-b').textContent = abilityLabels.b;
+            document.getElementById('ability-b').classList.add(abilityLabels.b === '有' ? 'text-green-500' : 'text-gray-500');
+            
+            document.getElementById('ability-c').textContent = abilityLabels.c;
+            document.getElementById('ability-c').classList.add(abilityLabels.c === '有' ? 'text-green-500' : 'text-gray-500');
+            
+            document.getElementById('ability-d').textContent = abilityLabels.d;
+            document.getElementById('ability-d').classList.add(abilityLabels.d === '有' ? 'text-green-500' : 'text-gray-500');
+            
+            document.getElementById('ability-e').textContent = abilityLabels.e;
+            document.getElementById('ability-e').classList.add(abilityLabels.e === '有' ? 'text-green-500' : 'text-gray-500');
+            
+            document.getElementById('ability-f').textContent = abilityLabels.f;
+            document.getElementById('ability-f').classList.add(abilityLabels.f === '有' ? 'text-green-500' : 'text-gray-500');
+        };
+        
+        // 調用特殊能力解析函數
+        parseSpecialAbilities(unitData.sp_abil);
+        
+        // 創建AP和DP格子
+        const createStatBlocks = (containerId, totalBlocks, value, blockWidth) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            // 計算需要完全填滿的格子數量
+            const fullBlocks = Math.floor(value);
+            // 計算剩餘的小數部分（用於半格）
+            const partialBlock = value - fullBlocks;
+            
+            for (let i = 0; i < totalBlocks; i++) {
+                const blockContainer = document.createElement('div');
+                blockContainer.className = 'stat-pill';
+                blockContainer.style.width = blockWidth;
+                
+                const fillBlock = document.createElement('div');
+                fillBlock.className = 'stat-fill-pill';
+                
+                // 決定每個格子的填充程度
+                if (i < fullBlocks) {
+                    // 完全填滿
+                    fillBlock.style.width = '100%';
+                    fillBlock.classList.add('filled');
+                } else if (i === fullBlocks && partialBlock > 0) {
+                    // 部分填滿（按照小數部分的比例）
+                    fillBlock.style.width = (partialBlock * 100) + '%';
+                    if (partialBlock >= 0.5) {
+                        fillBlock.classList.add('filled');
+                    }
+                } else {
+                    // 不填滿
+                    fillBlock.style.width = '0%';
+                }
+                
+                blockContainer.appendChild(fillBlock);
+                container.appendChild(blockContainer);
+            }
+        };
+        
+        // 創建AP格子：6格，每格寬度16.66%
+        createStatBlocks('ap-blocks', 6, unitData.ap, '16%');
+        
+        // 創建DP格子：3格，每格寬度33.33%
+        createStatBlocks('dp-blocks', 3, unitData.dp, '32%');
 
         // 設置更新時間
         const now = new Date();
         document.getElementById('update-time').textContent = now.toLocaleString();
 
-        // 設置深色/淺色模式
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-        }
+        // 設置為默認深色模式
+        document.documentElement.classList.add('dark');
+        
+        // 監聽系統深色/淺色模式變化 (可選，因為我們已經默認使用深色模式)
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-            if (event.matches) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
+            // 不論系統設置如何，我們都維持深色模式
+            document.documentElement.classList.add('dark');
         });
     </script>
 </body>

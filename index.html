@@ -254,14 +254,18 @@
             
             <!-- 武器資訊區 -->
             <div class="mt-4">
-                <h3 class="font-bold text-sm mb-2 text-primary-glow">武器資訊</h3>
-                <div class="grid grid-cols-1 gap-2" id="weapons-list">
-                    <!-- 武器列表會由JavaScript生成 -->
+                <div class="special-ability-box p-3 rounded-r-md mb-3">
+                    <h3 class="font-bold text-sm mb-2">武器資訊</h3>
+                    <div class="h-[115px] overflow-y-auto pr-1">
+                        <div class="grid grid-cols-2 gap-2" id="weapons-list">
+                            <!-- 武器列表會由JavaScript生成 -->
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- 武器參數顯示區 -->
-                <div class="mt-3 bg-white bg-opacity-10 dark:bg-gray-800 dark:bg-opacity-10 backdrop-blur-sm p-3 rounded-md hidden" id="weapon-details">
-                    <div class="text-sm font-medium text-primary-glow mb-1">武器參數</div>
+                <div class="special-ability-box p-3 rounded-r-md hidden" id="weapon-details">
+                    <h3 class="font-bold text-sm mb-2">武器參數</h3>
                     <div class="grid grid-cols-3 gap-x-3 gap-y-1.5 text-xs">
                         <div>
                             <span class="text-gray-500 dark:text-gray-400">攻擊力:</span>
@@ -457,20 +461,21 @@
             
             weaponsData.forEach((weapon, index) => {
                 const weaponItem = document.createElement('div');
-                weaponItem.className = 'bg-white bg-opacity-15 dark:bg-gray-800 dark:bg-opacity-15 backdrop-blur-sm px-3 py-2 rounded-md flex justify-between items-center cursor-pointer hover:bg-opacity-25 transition-all duration-200';
+                weaponItem.className = 'bg-white bg-opacity-15 dark:bg-gray-800 dark:bg-opacity-15 backdrop-blur-sm px-2 py-2 rounded-md cursor-pointer hover:bg-opacity-25 transition-all duration-200';
                 weaponItem.setAttribute('data-weapon-id', weapon.wId);
                 
                 // 武器名稱和射程
                 const weaponNameRange = document.createElement('div');
-                weaponNameRange.className = 'flex items-center justify-between w-full';
+                weaponNameRange.className = 'flex items-center justify-between';
                 
                 const weaponName = document.createElement('span');
-                weaponName.className = 'font-medium text-sm text-primary-glow';
+                weaponName.className = 'font-medium text-xs text-primary-glow truncate';
                 weaponName.style.textShadow = '0 0 3px rgba(77, 159, 255, 0.5)';
+                weaponName.style.maxWidth = '70%';
                 weaponName.textContent = weapon.wname;
                 
                 const weaponRange = document.createElement('span');
-                weaponRange.className = 'text-xs px-1.5 py-0.5 rounded-sm bg-primary bg-opacity-20 text-primary-glow ml-2';
+                weaponRange.className = 'text-xs px-1 py-0.5 rounded-sm bg-primary bg-opacity-20 text-primary-glow ml-1 flex-shrink-0';
                 weaponRange.textContent = weapon.range;
                 
                 weaponNameRange.appendChild(weaponName);

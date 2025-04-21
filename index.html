@@ -160,6 +160,32 @@
             box-shadow: 0 0 8px rgba(77, 159, 255, 0.9);
         }
         
+        /* 載入指示器樣式 */
+        .loading-spinner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(77, 159, 255, 0.2);
+            border-top: 4px solid #4D9FFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .img-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        
         /* 武器範圍圖示樣式 */
         .range-icon {
             display: flex;
@@ -283,7 +309,10 @@
 
             <!-- 機體圖片 -->
             <div class="relative w-full h-[165px] flex items-center justify-center mb-4 overflow-hidden">
-                <img id="unit-image" src="./unit/images/alteisen.png" alt="古鐵" class="max-h-full object-contain">
+                <div class="img-container">
+                    <div id="image-loading" class="loading-spinner"></div>
+                    <img id="unit-image" src="./unit/images/alteisen.png" alt="古鐵" class="max-h-full object-contain opacity-0 transition-opacity duration-300" style="z-index: 0;">
+                </div>
             </div>
 
             <!-- 主要數值區 -->
@@ -501,8 +530,38 @@
             
             // 設置機體圖片
             const imgPath = unitData.image_url || `./unit/images/${unitData.nameId}.png`;
-            document.getElementById('unit-image').src = imgPath;
-            document.getElementById('unit-image').alt = unitData.name;
+            const imageElement = document.getElementById('unit-image');
+            const loadingSpinner = document.getElementById('image-loading');
+            
+            // 圖片載入事件
+            imageElement.onload = function() {
+                // 隱藏載入指示器
+                loadingSpinner.style.display = 'none';
+                // 顯示圖片
+                imageElement.classList.remove('opacity-0');
+                imageElement.classList.add('opacity-100');
+            };
+            
+            // 圖片載入錯誤事件
+            imageElement.onerror = function() {
+                // 隱藏載入指示器
+                loadingSpinner.style.display = 'none';
+                // 顯示錯誤狀態
+                imageElement.src = ''; // 清除錯誤的圖片源
+                imageElement.classList.remove('opacity-0');
+                imageElement.classList.add('opacity-100');
+                
+                // 添加錯誤提示
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-negative-glow text-sm font-medium';
+                errorMsg.textContent = '無法載入圖片';
+                errorMsg.style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+                imageElement.parentNode.appendChild(errorMsg);
+            };
+            
+            // 設置圖片源和替代文字
+            imageElement.src = imgPath;
+            imageElement.alt = unitData.name;
             
             // 構建武器數據全局變數以供後續使用
             window.weaponsData = weaponsData;

@@ -613,13 +613,17 @@
                         }
                         
                         // 分割多個習得等級，例如 "1'10'23" => [1, 10, 23]
-                        // 確保使用正確的分隔符（可能是單引號或其他特殊字符）
                         console.log(`Processing action command: ${commandName}, levels: ${levelStr}`);
-                        const requiredLevels = levelStr.split(/['']/).map(level => {
+                        
+                        // 使用正確的分隔符 - 標準單引號
+                        const requiredLevels = levelStr.split("'").map(level => {
+                            if (!level.trim()) return null; // 忽略空字串
                             const parsed = parseInt(level.trim());
                             console.log(`Parsed level: ${parsed}`);
                             return parsed;
-                        });
+                        }).filter(level => level !== null); // 過濾掉null值
+                        
+                        console.log(`Total levels parsed: ${requiredLevels.length}, values: ${requiredLevels.join(', ')}`);
                         
                         // 計算駕駛員當前等級可以習得該指令的次數
                         let count = 0;

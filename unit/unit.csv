@@ -1,3 +1,2 @@
 id,nameId,name,image_url,hp,en,armor,pilot_series,ap,dp,sp_abil
 1,alteisen,古鐵,./unit/alteisen/unit00.png,4200,120,1500,atx,3,1.5,100000
-2,r-1,R-1,./unit/r-1/unit00.png,4000,130,1200,srx,4,1.5,100011

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>駕駛員資料</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4D9FFF',  // 更亮的藍色
+                        'primary-glow': '#7BB5FF',
+                        'negative': '#B32222', // 更暗的紅色
+                        'negative-glow': '#CC3333', // 偏暗的紅色
+                        secondary: '#2F5F9E',
+                        'dark-bg': '#1E1E24',
+                        'dark-card': '#303040',
+                        'light-card': '#E0E0E5',
+                        'tech-gray': '#74747A',
+                        'spirit-cmd': '#9C4AE8', // 精神指令紫色
+                        'spirit-glow': '#B279F5',
+                        'action-cmd': '#4AE89C', // 行動指令綠色
+                        'action-glow': '#79F5B2',
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'tech': '0 0 8px rgba(61, 123, 202, 0.4)',
+                        'tech-dark': '0 0 12px rgba(61, 123, 202, 0.6)',
+                        'spirit': '0 0 8px rgba(156, 74, 232, 0.4)',
+                        'action': '0 0 8px rgba(74, 232, 156, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+        :root {
+            --shimmer-color: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(61, 123, 202, 0.5);
+            --spirit-glow: rgba(156, 74, 232, 0.5);
+            --action-glow: rgba(74, 232, 156, 0.5);
+        }
+
+        .dark {
+            --shimmer-color: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(61, 123, 202, 0.5);
+            --spirit-glow: rgba(156, 74, 232, 0.5);
+            --action-glow: rgba(74, 232, 156, 0.5);
+        }
+        
+        body {
+            background-image: url('./unit/pilotbg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .tech-shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, var(--shimmer-color), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .glow-border {
+            position: relative;
+        }
+
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(45deg, transparent, var(--border-glow), transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+        }
+
+        .spirit-border::before {
+            background: linear-gradient(45deg, transparent, var(--spirit-glow), transparent);
+        }
+
+        .action-border::before {
+            background: linear-gradient(45deg, transparent, var(--action-glow), transparent);
+        }
+
+        .stat-bar {
+            position: relative;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: rgba(61, 123, 202, 0.2);
+        }
+
+        .stat-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #3D7BCA;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 200%;
+            }
+        }
+
+        .special-ability-box {
+            background-color: rgba(61, 123, 202, 0.1);
+            border-left: 3px solid #4D9FFF;
+            box-shadow: inset 0 0 10px rgba(77, 159, 255, 0.1);
+        }
+
+        .dark .special-ability-box {
+            background-color: rgba(61, 123, 202, 0.15);
+            border-left: 3px solid #4D9FFF;
+            box-shadow: inset 0 0 10px rgba(77, 159, 255, 0.15);
+        }
+        
+        .spirit-box {
+            background-color: rgba(156, 74, 232, 0.1);
+            border-left: 3px solid #9C4AE8;
+            box-shadow: inset 0 0 10px rgba(156, 74, 232, 0.1);
+        }
+
+        .dark .spirit-box {
+            background-color: rgba(156, 74, 232, 0.15);
+            border-left: 3px solid #9C4AE8;
+            box-shadow: inset 0 0 10px rgba(156, 74, 232, 0.15);
+        }
+        
+        .action-box {
+            background-color: rgba(74, 232, 156, 0.1);
+            border-left: 3px solid #4AE89C;
+            box-shadow: inset 0 0 10px rgba(74, 232, 156, 0.1);
+        }
+
+        .dark .action-box {
+            background-color: rgba(74, 232, 156, 0.15);
+            border-left: 3px solid #4AE89C;
+            box-shadow: inset 0 0 10px rgba(74, 232, 156, 0.15);
+        }
+        
+        /* 經驗值進度條 */
+        .exp-bar {
+            position: relative;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: rgba(61, 123, 202, 0.2);
+        }
+
+        .exp-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #4D9FFF;
+            border-radius: 6px;
+            box-shadow: 0 0 8px rgba(77, 159, 255, 0.6);
+        }
+        
+        /* 載入指示器樣式 */
+        .loading-spinner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(77, 159, 255, 0.2);
+            border-top: 4px solid #4D9FFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .img-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 指令標籤樣式 */
+        .cmd-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 3px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 0 4px rgba(77, 159, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .spirit-tag {
+            background-color: rgba(156, 74, 232, 0.15);
+            color: #B279F5;
+            text-shadow: 0 0 4px rgba(156, 74, 232, 0.5);
+        }
+        
+        .spirit-tag:hover {
+            background-color: rgba(156, 74, 232, 0.25);
+            box-shadow: 0 0 8px rgba(156, 74, 232, 0.5);
+        }
+        
+        .action-tag {
+            background-color: rgba(74, 232, 156, 0.15);
+            color: #79F5B2;
+            text-shadow: 0 0 4px rgba(74, 232, 156, 0.5);
+        }
+        
+        .action-tag:hover {
+            background-color: rgba(74, 232, 156, 0.25);
+            box-shadow: 0 0 8px rgba(74, 232, 156, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+    <div class="container max-w-lg mx-auto px-4 py-4">
+        <!-- 頁面標題區 -->
+        <div class="flex items-center justify-center mb-4">
+            <div class="flex items-center bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg py-2 px-4 shadow-md tech-shimmer glow-border">
+                <img src="./images/srwoglblogo.png" alt="SRW Logo" class="h-10 mr-3">
+                <h1 class="text-xl font-bold text-primary-glow" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">駕駛員資料</h1>
+            </div>
+        </div>
+        <!-- 駕駛員資料卡片 -->
+        <div class="bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg p-5 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border mb-4">
+            <!-- 駕駛員標題區 -->
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="font-bold text-2xl text-primary-glow drop-shadow-lg" id="pilot-name" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">京宮秀人</h1>
+                </div>
+                <div class="text-sm font-medium bg-primary bg-opacity-10 px-3 py-1 rounded-full text-primary-glow" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5); box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <span id="unit-series">ATX</span> 系列
+                </div>
+            </div>
+
+            <!-- 駕駛員圖片 -->
+            <div class="relative w-full h-[165px] flex items-center justify-center mb-4 overflow-hidden">
+                <div class="img-container">
+                    <div id="image-loading" class="loading-spinner"></div>
+                    <img id="pilot-image" src="./pilot/images/kyosuke.png" alt="京宮秀人" class="max-h-full object-contain opacity-0 transition-opacity duration-300" style="z-index: 0;">
+                </div>
+            </div>
+
+            <!-- 主要數值區 -->
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">Lv:</p>
+                    <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="pilot-level" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">5</p>
+                </div>
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">SP:</p>
+                    <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="pilot-sp" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">35</p>
+                </div>
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex flex-col justify-center h-12">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs text-gray-700 dark:text-gray-300 font-medium">經驗值:</p>
+                        <p class="text-xs font-medium text-primary-glow" id="exp-value">1200/2000</p>
+                    </div>
+                    <div class="mt-1">
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="exp-fill" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 剩餘經驗值 -->
+            <div class="mb-4 bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center">
+                <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">還差:</p>
+                <p class="font-medium text-primary-glow drop-shadow-md" id="exp-remaining" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">800</p>
+            </div>
+
+            <!-- 精神指令區 -->
+            <div class="spirit-box p-3 rounded-r-md mb-4">
+                <h3 class="font-bold text-sm mb-2 text-spirit-glow" style="text-shadow: 0 0 5px rgba(156, 74, 232, 0.5);">精神指令</h3>
+                <div class="flex flex-wrap gap-2" id="spirit-commands">
+                    <span class="cmd-tag spirit-tag">熱血</span>
+                    <span class="cmd-tag spirit-tag">鬥志</span>
+                    <span class="cmd-tag spirit-tag">集中</span>
+                    <span class="cmd-tag spirit-tag">必中</span>
+                    <span class="cmd-tag spirit-tag">加速</span>
+                    <span class="cmd-tag spirit-tag">幸運</span>
+                </div>
+            </div>
+            
+            <!-- 行動指令區 -->
+            <div class="action-box p-3 rounded-r-md">
+                <h3 class="font-bold text-sm mb-2 text-action-glow" style="text-shadow: 0 0 5px rgba(74, 232, 156, 0.5);">行動指令</h3>
+                <div class="flex flex-wrap gap-2" id="action-commands">
+                    <span class="cmd-tag action-tag">攻擊</span>
+                    <span class="cmd-tag action-tag">格鬥</span>
+                    <span class="cmd-tag action-tag">射擊</span>
+                    <span class="cmd-tag action-tag">防禦</span>
+                    <span class="cmd-tag action-tag">迴避</span>
+                    <span class="cmd-tag action-tag">前進</span>
+                    <span class="cmd-tag action-tag">後退</span>
+                    <span class="cmd-tag action-tag">突擊</span>
+                    <span class="cmd-tag action-tag">離脫</span>
+                    <span class="cmd-tag action-tag">精神</span>
+                    <span class="cmd-tag action-tag">瞄準</span>
+                    <span class="cmd-tag action-tag">盾牌</span>
+                    <span class="cmd-tag action-tag">切返</span>
+                    <span class="cmd-tag action-tag">底力</span>
+                </div>
+            </div>
+            
+            <!-- 底部導航控制區 -->
+            <div class="mt-5 flex items-center justify-center">
+                <button id="prev-pilot" class="bg-primary bg-opacity-10 h-9 w-9 rounded-full flex justify-center items-center mr-3 text-primary-glow hover:bg-opacity-20 transition-all" style="box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div class="relative">
+                    <input type="text" id="pilot-id-search" placeholder="輸入ID..." class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 text-gray-800 dark:text-gray-200 rounded-lg py-2 px-4 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <button id="search-btn" class="absolute right-2 top-2 text-primary-glow">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <button id="next-pilot" class="bg-primary bg-opacity-10 h-9 w-9 rounded-full flex justify-center items-center ml-3 text-primary-glow hover:bg-opacity-20 transition-all" style="box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 解析CSV數據
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            const results = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = line.split(',').map(v => v.trim());
+                const entry = {};
+                
+                for (let j = 0; j < headers.length; j++) {
+                    let value = values[j];
+                    // 嘗試轉換數值型字段
+                    if (!isNaN(value) && value !== '') {
+                        // 檢查是否為浮點數
+                        if (value.includes('.')) {
+                            value = parseFloat(value);
+                        } else {
+                            value = parseInt(value);
+                        }
+                    }
+                    entry[headers[j]] = value;
+                }
+                
+                results.push(entry);
+            }
+            
+            return results;
+        }
+        
+        // 全局變數存放所有駕駛員資料
+        let allPilotsData = [];
+        let currentPilotIndex = 0;
+        
+        // 加載駕駛員數據
+        async function loadPilotData(pilotId = null) {
+            try {
+                // 如果還沒加載過全部資料
+                if (allPilotsData.length === 0) {
+                    const response = await fetch('./pilot/pilot.csv');
+                    if (!response.ok) {
+                        throw new Error(`Failed to load pilot data: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const csvText = await response.text();
+                    allPilotsData = parseCSV(csvText);
+                    
+                    if (allPilotsData.length === 0) {
+                        throw new Error("No pilot data found");
+                    }
+                }
+                
+                // 如果沒有指定ID，則使用第一個駕駛員，否則根據ID查找駕駛員
+                let pilotData;
+                
+                if (pilotId !== null) {
+                    // 嘗試找到指定ID的駕駛員
+                    const pilotIndex = allPilotsData.findIndex(pilot => pilot.id == pilotId);
+                    if (pilotIndex === -1) {
+                        alert(`找不到ID為 ${pilotId} 的駕駛員`);
+                        return;
+                    }
+                    pilotData = allPilotsData[pilotIndex];
+                    currentPilotIndex = pilotIndex;
+                } else {
+                    // 使用當前索引的駕駛員
+                    pilotData = allPilotsData[currentPilotIndex];
+                }
+                
+                // 清空搜索欄位
+                document.getElementById('pilot-id-search').value = '';
+                
+                // 更新箭頭按鈕的啟用/禁用狀態
+                updateNavigationButtons();
+                
+                // 渲染頁面
+                renderPilotData(pilotData);
+                
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('pilot-name').textContent = "載入錯誤";
+                // 顯示錯誤信息在頁面上
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'bg-negative bg-opacity-20 p-3 rounded-md text-negative-glow';
+                errorDiv.textContent = `無法載入數據: ${error.message}`;
+                document.querySelector('.container').appendChild(errorDiv);
+            }
+        }
+        
+        // 更新導航按鈕的狀態
+        function updateNavigationButtons() {
+            const prevButton = document.getElementById('prev-pilot');
+            const nextButton = document.getElementById('next-pilot');
+            
+            // 如果在第一個駕駛員，禁用"上一個"按鈕
+            if (currentPilotIndex === 0) {
+                prevButton.classList.add('opacity-50', 'cursor-not-allowed');
+                prevButton.disabled = true;
+            } else {
+                prevButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                prevButton.disabled = false;
+            }
+            
+            // 如果在最後一個駕駛員，禁用"下一個"按鈕
+            if (currentPilotIndex === allPilotsData.length - 1) {
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+                nextButton.disabled = true;
+            } else {
+                nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextButton.disabled = false;
+            }
+        }
+        
+        // 使用加載的數據渲染頁面
+        function renderPilotData(pilotData) {
+            // 填充頁面數據
+            document.getElementById('pilot-name').textContent = pilotData.name;
+            document.getElementById('unit-series').textContent = pilotData.unit_series.toUpperCase();
+            document.getElementById('pilot-level').textContent = pilotData.level;
+            document.getElementById('pilot-sp').textContent = pilotData.sp;
+            
+            // 設置經驗值
+            const currentExp = pilotData.exp;
+            const nextLevelExp = pilotData.next_level_exp;
+            const remainingExp = nextLevelExp - currentExp;
+            const expPercentage = (currentExp / nextLevelExp) * 100;
+            
+            document.getElementById('exp-value').textContent = `${currentExp}/${nextLevelExp}`;
+            document.getElementById('exp-fill').style.width = `${expPercentage}%`;
+            document.getElementById('exp-remaining').textContent = remainingExp;
+            
+            // 設置駕駛員圖片
+            const imgPath = pilotData.image_url || `./pilot/images/${pilotData.nameId}.png`;
+            const imageElement = document.getElementById('pilot-image');
+            const loadingSpinner = document.getElementById('image-loading');
+            
+            // 圖片載入事件
+            imageElement.onload = function() {
+                // 隱藏載入指示器
+                loadingSpinner.style.display = 'none';
+                // 顯示圖片
+                imageElement.classList.remove('opacity-0');
+                imageElement.classList.add('opacity-100');
+            };
+            
+            // 圖片載入錯誤事件
+            imageElement.onerror = function() {
+                // 隱藏載入指示器
+                loadingSpinner.style.display = 'none';
+                // 顯示錯誤狀態
+                imageElement.src = ''; // 清除錯誤的圖片源
+                imageElement.classList.remove('opacity-0');
+                imageElement.classList.add('opacity-100');
+                
+                // 添加錯誤提示
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-negative-glow text-sm font-medium';
+                errorMsg.textContent = '無法載入圖片';
+                errorMsg.style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+                imageElement.parentNode.appendChild(errorMsg);
+            };
+            
+            // 設置圖片源和替代文字
+            imageElement.src = imgPath;
+            imageElement.alt = pilotData.name;
+            
+            // 渲染精神指令
+            const spiritCommandsContainer = document.getElementById('spirit-commands');
+            spiritCommandsContainer.innerHTML = '';
+            
+            if (pilotData.spirit_commands) {
+                const spiritCommands = pilotData.spirit_commands.split('|');
+                spiritCommands.forEach(command => {
+                    if (command.trim()) {
+                        const commandTag = document.createElement('span');
+                        commandTag.className = 'cmd-tag spirit-tag';
+                        commandTag.textContent = command.trim();
+                        spiritCommandsContainer.appendChild(commandTag);
+                    }
+                });
+            }
+            
+            // 渲染行動指令
+            const actionCommandsContainer = document.getElementById('action-commands');
+            actionCommandsContainer.innerHTML = '';
+            
+            // 定義所有可能的行動指令
+            const allActionCommands = [
+                '攻擊', '格鬥', '射擊', '防禦', '迴避', 
+                '前進', '後退', '突擊', '離脫', '精神', 
+                '瞄準', '盾牌', '切返', '底力'
+            ];
+            
+            // 從駕駛員數據中獲取可用的行動指令
+            const availableCommands = pilotData.action_commands 
+                ? pilotData.action_commands.split('|').map(cmd => cmd.trim())
+                : allActionCommands; // 如果沒有數據，預設所有指令都可用
+            
+            // 創建每個指令的標籤，可用的會高亮，不可用的會變暗
+            allActionCommands.forEach(command => {
+                const commandTag = document.createElement('span');
+                if (availableCommands.includes(command)) {
+                    commandTag.className = 'cmd-tag action-tag';
+                } else {
+                    commandTag.className = 'cmd-tag action-tag opacity-30';
+                }
+                commandTag.textContent = command;
+                actionCommandsContainer.appendChild(commandTag);
+            });
+        }
+        
+        // 直接定義導航函數
+        function goToPrevPilot() {
+            console.log("Going to previous pilot, current index:", currentPilotIndex);
+            if (currentPilotIndex > 0) {
+                currentPilotIndex--;
+                loadPilotData();
+            }
+        }
+        
+        function goToNextPilot() {
+            console.log("Going to next pilot, current index:", currentPilotIndex);
+            if (currentPilotIndex < allPilotsData.length - 1) {
+                currentPilotIndex++;
+                loadPilotData();
+            }
+        }
+        
+        // 頁面載入時執行
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log("DOM Content Loaded");
+            
+            // 初始加載第一個駕駛員
+            await loadPilotData();
+            
+            // 直接綁定事件處理函數到按鈕
+            document.getElementById('prev-pilot').addEventListener('click', goToPrevPilot);
+            document.getElementById('next-pilot').addEventListener('click', goToNextPilot);
+            
+            // 搜索按鈕點擊事件
+            document.getElementById('search-btn').addEventListener('click', performSearch);
+            
+            // 搜索框回車事件
+            document.getElementById('pilot-id-search').addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            console.log("All event listeners set up");
+        });
+        
+        // 執行搜索
+        function performSearch() {
+            const searchInput = document.getElementById('pilot-id-search');
+            const pilotId = searchInput.value.trim();
+            
+            if (pilotId === '') {
+                return; // 如果搜索框為空，不執行搜索
+            }
+            
+            // 檢查輸入是否為數字
+            if (!/^\d+$/.test(pilotId)) {
+                alert('請輸入有效的數字ID');
+                return;
+            }
+            
+            // 載入指定ID的駕駛員
+            loadPilotData(parseInt(pilotId));
+        }
+        
+        // 設置為默認深色模式
+        document.documentElement.classList.add('dark');
+        
+        // 監聽系統深色/淺色模式變化 (可選，因為我們已經默認使用深色模式)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            // 不論系統設置如何，我們都維持深色模式
+            document.documentElement.classList.add('dark');
+        });
+    </script>
+</body>
+</html>

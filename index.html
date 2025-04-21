@@ -476,7 +476,7 @@
         async function loadWeaponsData(nameId) {
             try {
                 // 注意: nameId 是變數，路徑是動態構建的
-                const response = await fetch(`./${nameId}/weapon.csv`);
+                const response = await fetch(`./unit/${nameId}/weapon.csv`);
                 if (!response.ok) {
                     throw new Error(`Failed to load weapon data: ${response.status} ${response.statusText}`);
                 }

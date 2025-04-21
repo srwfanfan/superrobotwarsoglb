@@ -12,6 +12,8 @@
                     colors: {
                         primary: '#4D9FFF',  // 更亮的藍色
                         'primary-glow': '#7BB5FF',
+                        'negative': '#B32222', // 更暗的紅色
+                        'negative-glow': '#CC3333', // 偏暗的紅色
                         secondary: '#2F5F9E',
                         'dark-bg': '#1E1E24',
                         'dark-card': '#303040',
@@ -222,28 +224,26 @@
             <!-- 特殊能力區 -->
             <div class="special-ability-box p-3 rounded-r-md">
                 <h3 class="font-bold text-sm mb-2">特殊能力</h3>
-                <div class="grid grid-cols-3 gap-2 text-sm">
+                <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                     <div class="flex items-center">
                         <span class="mr-1">劍:</span>
                         <span id="ability-a" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-1">盾:</span>
+                        <span id="ability-b" class="font-medium"></span>
                     </div>
                     <div class="flex items-center">
                         <span class="mr-1">護罩:</span>
                         <span id="ability-c" class="font-medium"></span>
                     </div>
                     <div class="flex items-center">
-                        <span class="mr-1">變形:</span>
-                        <span id="ability-e" class="font-medium"></span>
-                    </div>
-                </div>
-                <div class="grid grid-cols-3 gap-2 text-sm mt-1">
-                    <div class="flex items-center">
-                        <span class="mr-1">盾:</span>
-                        <span id="ability-b" class="font-medium"></span>
-                    </div>
-                    <div class="flex items-center">
                         <span class="mr-1">分身:</span>
                         <span id="ability-d" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-1">變形:</span>
+                        <span id="ability-e" class="font-medium"></span>
                     </div>
                     <div class="flex items-center">
                         <span class="mr-1">變身:</span>
@@ -298,13 +298,14 @@
                 f: spAbilStr[5] === '1' ? '有' : '無'
             };
             
-            // 設置每個能力的顯示值
+            // 設置每個能力的顯示值，為「有」添加藍色發光效果，為「無」添加暗紅色發光效果
             document.getElementById('ability-a').textContent = abilityLabels.a;
             if (abilityLabels.a === '有') {
                 document.getElementById('ability-a').classList.add('text-primary-glow');
                 document.getElementById('ability-a').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
             } else {
-                document.getElementById('ability-a').classList.add('text-gray-500');
+                document.getElementById('ability-a').classList.add('text-negative');
+                document.getElementById('ability-a').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
             }
             
             document.getElementById('ability-b').textContent = abilityLabels.b;
@@ -312,7 +313,8 @@
                 document.getElementById('ability-b').classList.add('text-primary-glow');
                 document.getElementById('ability-b').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
             } else {
-                document.getElementById('ability-b').classList.add('text-gray-500');
+                document.getElementById('ability-b').classList.add('text-negative');
+                document.getElementById('ability-b').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
             }
             
             document.getElementById('ability-c').textContent = abilityLabels.c;
@@ -320,7 +322,8 @@
                 document.getElementById('ability-c').classList.add('text-primary-glow');
                 document.getElementById('ability-c').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
             } else {
-                document.getElementById('ability-c').classList.add('text-gray-500');
+                document.getElementById('ability-c').classList.add('text-negative');
+                document.getElementById('ability-c').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
             }
             
             document.getElementById('ability-d').textContent = abilityLabels.d;
@@ -328,7 +331,8 @@
                 document.getElementById('ability-d').classList.add('text-primary-glow');
                 document.getElementById('ability-d').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
             } else {
-                document.getElementById('ability-d').classList.add('text-gray-500');
+                document.getElementById('ability-d').classList.add('text-negative');
+                document.getElementById('ability-d').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
             }
             
             document.getElementById('ability-e').textContent = abilityLabels.e;
@@ -336,7 +340,8 @@
                 document.getElementById('ability-e').classList.add('text-primary-glow');
                 document.getElementById('ability-e').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
             } else {
-                document.getElementById('ability-e').classList.add('text-gray-500');
+                document.getElementById('ability-e').classList.add('text-negative');
+                document.getElementById('ability-e').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
             }
             
             document.getElementById('ability-f').textContent = abilityLabels.f;
@@ -344,7 +349,8 @@
                 document.getElementById('ability-f').classList.add('text-primary-glow');
                 document.getElementById('ability-f').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
             } else {
-                document.getElementById('ability-f').classList.add('text-gray-500');
+                document.getElementById('ability-f').classList.add('text-negative');
+                document.getElementById('ability-f').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
             }
         };
         

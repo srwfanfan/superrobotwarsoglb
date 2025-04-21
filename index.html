@@ -301,6 +301,9 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h1 class="font-bold text-2xl text-primary-glow drop-shadow-lg" id="unit-name" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">古鐵</h1>
+                    <div class="text-xs text-gray-700 dark:text-gray-300">
+                        ID: <span id="unit-id" class="text-primary-glow" style="text-shadow: 0 0 3px rgba(77, 159, 255, 0.5);">1</span>
+                    </div>
                 </div>
                 <div class="text-sm font-medium bg-primary bg-opacity-10 px-3 py-1 rounded-full text-primary-glow" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5); box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
                     <span id="pilot-series-display">ATX</span> 系列
@@ -428,6 +431,28 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 底部導航控制區 -->
+            <div class="mt-5 flex items-center justify-center">
+                <button id="prev-unit" class="bg-primary bg-opacity-10 h-9 w-9 rounded-full flex justify-center items-center mr-3 text-primary-glow hover:bg-opacity-20 transition-all" style="box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div class="relative">
+                    <input type="text" id="unit-id-search" placeholder="輸入ID..." class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 text-gray-800 dark:text-gray-200 rounded-lg py-2 px-4 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <button id="search-btn" class="absolute right-2 top-2 text-primary-glow">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <button id="next-unit" class="bg-primary bg-opacity-10 h-9 w-9 rounded-full flex justify-center items-center ml-3 text-primary-glow hover:bg-opacity-20 transition-all" style="box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
 
@@ -467,19 +492,51 @@
             return results;
         }
         
+        // 全局變數存放所有機體資料
+        let allUnitsData = [];
+        let currentUnitIndex = 0;
+        
         // 加載機體數據
-        async function loadUnitData() {
+        async function loadUnitData(unitId = null) {
             try {
-                const response = await fetch('./unit/unit.csv');
-                if (!response.ok) {
-                    throw new Error(`Failed to load unit data: ${response.status} ${response.statusText}`);
+                // 如果還沒加載過全部資料
+                if (allUnitsData.length === 0) {
+                    const response = await fetch('./unit/unit.csv');
+                    if (!response.ok) {
+                        throw new Error(`Failed to load unit data: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const csvText = await response.text();
+                    allUnitsData = parseCSV(csvText);
+                    
+                    if (allUnitsData.length === 0) {
+                        throw new Error("No unit data found");
+                    }
                 }
                 
-                const csvText = await response.text();
-                const unitsData = parseCSV(csvText);
+                // 如果沒有指定ID，則使用第一個機體，否則根據ID查找機體
+                let unitData;
                 
-                // 這裡假設第一個機體是要顯示的，實際應用中可能需要根據URL參數或者其他邏輯來決定
-                const unitData = unitsData[0];
+                if (unitId !== null) {
+                    // 嘗試找到指定ID的機體
+                    const unitIndex = allUnitsData.findIndex(unit => unit.id == unitId);
+                    if (unitIndex === -1) {
+                        alert(`找不到ID為 ${unitId} 的機體`);
+                        return;
+                    }
+                    unitData = allUnitsData[unitIndex];
+                    currentUnitIndex = unitIndex;
+                } else {
+                    // 使用當前索引的機體
+                    unitData = allUnitsData[currentUnitIndex];
+                }
+                
+                // 更新UI上的ID顯示
+                document.getElementById('unit-id').textContent = unitData.id;
+                document.getElementById('unit-id-search').value = ''; // 清空搜索欄位
+                
+                // 更新箭頭按鈕的啟用/禁用狀態
+                updateNavigationButtons();
                 
                 // 加載武器數據
                 const weaponsData = await loadWeaponsData(unitData.nameId);
@@ -495,6 +552,30 @@
                 errorDiv.className = 'bg-negative bg-opacity-20 p-3 rounded-md text-negative-glow';
                 errorDiv.textContent = `無法載入數據: ${error.message}`;
                 document.querySelector('.container').appendChild(errorDiv);
+            }
+        }
+        
+        // 更新導航按鈕的狀態
+        function updateNavigationButtons() {
+            const prevButton = document.getElementById('prev-unit');
+            const nextButton = document.getElementById('next-unit');
+            
+            // 如果在第一個機體，禁用"上一個"按鈕
+            if (currentUnitIndex === 0) {
+                prevButton.classList.add('opacity-50', 'cursor-not-allowed');
+                prevButton.disabled = true;
+            } else {
+                prevButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                prevButton.disabled = false;
+            }
+            
+            // 如果在最後一個機體，禁用"下一個"按鈕
+            if (currentUnitIndex === allUnitsData.length - 1) {
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+                nextButton.disabled = true;
+            } else {
+                nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextButton.disabled = false;
             }
         }
         
@@ -816,7 +897,55 @@
         }
         
         // 頁面載入時執行
-        window.addEventListener('DOMContentLoaded', loadUnitData);
+        window.addEventListener('DOMContentLoaded', () => {
+            // 初始加載第一個機體
+            loadUnitData();
+            
+            // 設置向前按鈕的點擊事件
+            document.getElementById('prev-unit').addEventListener('click', () => {
+                if (currentUnitIndex > 0) {
+                    currentUnitIndex--;
+                    loadUnitData();
+                }
+            });
+            
+            // 設置向後按鈕的點擊事件
+            document.getElementById('next-unit').addEventListener('click', () => {
+                if (currentUnitIndex < allUnitsData.length - 1) {
+                    currentUnitIndex++;
+                    loadUnitData();
+                }
+            });
+            
+            // 搜索按鈕點擊事件
+            document.getElementById('search-btn').addEventListener('click', performSearch);
+            
+            // 搜索框回車事件
+            document.getElementById('unit-id-search').addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+        
+        // 執行搜索
+        function performSearch() {
+            const searchInput = document.getElementById('unit-id-search');
+            const unitId = searchInput.value.trim();
+            
+            if (unitId === '') {
+                return; // 如果搜索框為空，不執行搜索
+            }
+            
+            // 檢查輸入是否為數字
+            if (!/^\d+$/.test(unitId)) {
+                alert('請輸入有效的數字ID');
+                return;
+            }
+            
+            // 載入指定ID的機體
+            loadUnitData(parseInt(unitId));
+        }
     </script>
 </body>
 </html>

@@ -277,33 +277,31 @@
                 </div>
             </div>
 
-            <!-- 主要數值區 -->
-            <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
-                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">Lv:</p>
-                    <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="pilot-level" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">5</p>
-                </div>
-                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
-                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">SP:</p>
-                    <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="pilot-sp" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">35</p>
-                </div>
-                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex flex-col justify-center h-12">
-                    <div class="flex items-center justify-between">
-                        <p class="text-xs text-gray-700 dark:text-gray-300 font-medium">經驗值:</p>
-                        <p class="text-xs font-medium text-primary-glow" id="exp-value">1200/2000</p>
+            <!-- 主要數值區 - 重新排列為2x2布局 -->
+            <div class="mb-4">
+                <!-- 第一行: Lv 和 經驗值 -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                        <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">Lv:</p>
+                        <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="pilot-level" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">5</p>
                     </div>
-                    <div class="mt-1">
-                        <div class="exp-bar">
-                            <div class="exp-fill" id="exp-fill" style="width: 60%;"></div>
-                        </div>
+                    <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                        <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">經驗值:</p>
+                        <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="exp-value" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">14500</p>
                     </div>
                 </div>
-            </div>
-            
-            <!-- 剩餘經驗值 -->
-            <div class="mb-4 bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center">
-                <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">還差:</p>
-                <p class="font-medium text-primary-glow drop-shadow-md" id="exp-remaining" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">800</p>
+                
+                <!-- 第二行: SP 和 還差 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                        <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">SP:</p>
+                        <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="pilot-sp" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">35</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                        <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">還差:</p>
+                        <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="exp-remaining" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">800</p>
+                    </div>
+                </div>
             </div>
 
             <!-- 精神指令區 -->
@@ -497,11 +495,9 @@
             // 設置經驗值，預設值為14500，還差500
             const currentExp = pilotData.exp || 14500;
             const remainingExp = pilotData.remaining_exp || 500;
-            const nextLevelExp = currentExp + remainingExp;
-            const expPercentage = (currentExp / nextLevelExp) * 100;
             
-            document.getElementById('exp-value').textContent = `${currentExp}/${nextLevelExp}`;
-            document.getElementById('exp-fill').style.width = `${expPercentage}%`;
+            // 直接顯示經驗值數據，不使用分數形式
+            document.getElementById('exp-value').textContent = currentExp;
             document.getElementById('exp-remaining').textContent = remainingExp;
             
             // 設置駕駛員圖片
@@ -617,7 +613,13 @@
                         }
                         
                         // 分割多個習得等級，例如 "1'10'23" => [1, 10, 23]
-                        const requiredLevels = levelStr.split("'").map(level => parseInt(level));
+                        // 確保使用正確的分隔符（可能是單引號或其他特殊字符）
+                        console.log(`Processing action command: ${commandName}, levels: ${levelStr}`);
+                        const requiredLevels = levelStr.split(/['']/).map(level => {
+                            const parsed = parseInt(level.trim());
+                            console.log(`Parsed level: ${parsed}`);
+                            return parsed;
+                        });
                         
                         // 計算駕駛員當前等級可以習得該指令的次數
                         let count = 0;

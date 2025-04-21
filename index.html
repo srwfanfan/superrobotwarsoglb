@@ -159,6 +159,112 @@
         .stat-fill-pill.filled {
             box-shadow: 0 0 8px rgba(77, 159, 255, 0.9);
         }
+        
+        /* 武器範圍圖示樣式 */
+        .range-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 16px;
+            border-radius: 3px;
+            background-color: rgba(77, 159, 255, 0.15);
+            position: relative;
+        }
+        
+        .range-icon.long::before,
+        .range-icon.long::after {
+            position: absolute;
+            color: #7BB5FF;
+            font-size: 12px;
+            text-shadow: 0 0 4px rgba(77, 159, 255, 0.9);
+            line-height: 1;
+        }
+        
+        .range-icon.long::before {
+            content: '◄';
+            left: 4px;
+            top: 1px;
+        }
+        
+        .range-icon.long::after {
+            content: '►';
+            right: 4px;
+            top: 1px;
+        }
+        
+        .range-icon.long span {
+            position: absolute;
+            width: 8px;
+            height: 1px;
+            background-color: #7BB5FF;
+            box-shadow: 0 0 4px rgba(77, 159, 255, 0.9);
+            top: 8px;
+        }
+        
+        .range-icon.long span:first-child {
+            left: 11px;
+        }
+        
+        .range-icon.long span:last-child {
+            right: 11px;
+        }
+        
+        .range-icon.medium::before,
+        .range-icon.medium::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border: 1px solid #7BB5FF;
+            box-shadow: 0 0 4px rgba(77, 159, 255, 0.6);
+        }
+        
+        .range-icon.medium::before {
+            left: 6px;
+        }
+        
+        .range-icon.medium::after {
+            right: 6px;
+        }
+        
+        .range-icon.short::before,
+        .range-icon.short::after {
+            position: absolute;
+            color: #7BB5FF;
+            font-size: 12px;
+            text-shadow: 0 0 4px rgba(77, 159, 255, 0.9);
+            line-height: 1;
+        }
+        
+        .range-icon.short::before {
+            content: '►';
+            left: 4px;
+            top: 1px;
+        }
+        
+        .range-icon.short::after {
+            content: '◄';
+            right: 4px;
+            top: 1px;
+        }
+        
+        .range-icon.short span {
+            position: absolute;
+            width: 8px;
+            height: 1px;
+            background-color: #7BB5FF;
+            box-shadow: 0 0 4px rgba(77, 159, 255, 0.9);
+            top: 8px;
+        }
+        
+        .range-icon.short span:first-child {
+            left: 11px;
+        }
+        
+        .range-icon.short span:last-child {
+            right: 11px;
+        }
     </style>
 </head>
 <body class="bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
@@ -177,21 +283,21 @@
 
             <!-- 機體圖片 -->
             <div class="relative w-full h-48 flex items-center justify-center mb-4 overflow-hidden">
-                <img id="unit-image" src="./unit/images/alteisen.png" alt="古鐵" class="max-h-full object-contain">
+                <img id="unit-image" src="./unit/images/alteisen.png" alt="古鐵" class="max-h-full object-contain transform scale-80" style="transform: scale(0.8);">
             </div>
 
             <!-- 主要數值區 -->
             <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-1.5 rounded-md shadow-md flex flex-col justify-center h-16">
-                    <p class="text-xs text-gray-700 dark:text-gray-300 font-medium">HP</p>
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">HP:</p>
                     <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="hp-value" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">4200</p>
                 </div>
-                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-1.5 rounded-md shadow-md flex flex-col justify-center h-16">
-                    <p class="text-xs text-gray-700 dark:text-gray-300 font-medium">EN</p>
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">EN:</p>
                     <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="en-value" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">120</p>
                 </div>
-                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-1.5 rounded-md shadow-md flex flex-col justify-center h-16">
-                    <p class="text-xs text-gray-700 dark:text-gray-300 font-medium">裝甲</p>
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">裝甲:</p>
                     <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="armor-value" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">1500</p>
                 </div>
             </div>
@@ -275,11 +381,11 @@
                             <span id="weapon-bullet" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                         <div>
-                            <span class="text-gray-800 dark:text-gray-200">氣力:</span>
+                            <span class="text-gray-800 dark:text-gray-200">必要氣力:</span>
                             <span id="weapon-ki" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                         <div>
-                            <span class="text-gray-800 dark:text-gray-200">類型:</span>
+                            <span class="text-gray-800 dark:text-gray-200">格．射:</span>
                             <span id="weapon-type" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                         <div>
@@ -472,9 +578,38 @@
                 weaponName.style.maxWidth = '70%';
                 weaponName.textContent = weapon.wname;
                 
-                const weaponRange = document.createElement('span');
-                weaponRange.className = 'text-xs px-1 py-0.5 rounded-sm bg-primary bg-opacity-20 text-primary-glow ml-1 flex-shrink-0';
-                weaponRange.textContent = weapon.range;
+                // 創建武器範圍圖標 - 更華麗的版本
+                const weaponRange = document.createElement('div');
+                weaponRange.className = 'range-icon ml-1 flex-shrink-0';
+                
+                // 根據範圍添加特定類
+                switch(weapon.range) {
+                    case 'L':
+                        // 長距離 - 箭頭指向外
+                        weaponRange.classList.add('long');
+                        // 添加兩條線
+                        const line1 = document.createElement('span');
+                        const line2 = document.createElement('span');
+                        weaponRange.appendChild(line1);
+                        weaponRange.appendChild(line2);
+                        break;
+                    case 'M':
+                        // 中距離 - 方形空框
+                        weaponRange.classList.add('medium');
+                        break;
+                    case 'S':
+                        // 短距離 - 箭頭指向內
+                        weaponRange.classList.add('short');
+                        // 添加兩條線
+                        const line3 = document.createElement('span');
+                        const line4 = document.createElement('span');
+                        weaponRange.appendChild(line3);
+                        weaponRange.appendChild(line4);
+                        break;
+                    default:
+                        // 如果是未知範圍，顯示文字
+                        weaponRange.textContent = weapon.range;
+                }
                 
                 weaponNameRange.appendChild(weaponName);
                 weaponNameRange.appendChild(weaponRange);
@@ -499,8 +634,12 @@
             
             // 填充武器參數
             document.getElementById('weapon-power').textContent = weapon.power;
-            document.getElementById('weapon-bullet').textContent = weapon.bullet;
-            document.getElementById('weapon-ki').textContent = weapon.ki_min;
+            
+            // 當彈藥為0時顯示--
+            document.getElementById('weapon-bullet').textContent = weapon.bullet === 0 ? '--' : weapon.bullet;
+            
+            // 當必要氣力為0時顯示--
+            document.getElementById('weapon-ki').textContent = weapon.ki_min === 0 ? '--' : weapon.ki_min;
             
             // 類型轉換為中文
             let typeText = '';
@@ -516,7 +655,8 @@
             }
             document.getElementById('weapon-type').textContent = typeText;
             
-            document.getElementById('weapon-en').textContent = weapon.en_consume;
+            // 當EN消耗為0時顯示--
+            document.getElementById('weapon-en').textContent = weapon.en_consume === 0 ? '--' : weapon.en_consume;
             
             // 特效轉換為中文
             let effectText = '';

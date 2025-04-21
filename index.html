@@ -301,9 +301,6 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h1 class="font-bold text-2xl text-primary-glow drop-shadow-lg" id="unit-name" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">古鐵</h1>
-                    <div class="text-xs text-gray-700 dark:text-gray-300">
-                        ID: <span id="unit-id" class="text-primary-glow" style="text-shadow: 0 0 3px rgba(77, 159, 255, 0.5);">1</span>
-                    </div>
                 </div>
                 <div class="text-sm font-medium bg-primary bg-opacity-10 px-3 py-1 rounded-full text-primary-glow" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5); box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
                     <span id="pilot-series-display">ATX</span> 系列
@@ -531,9 +528,8 @@
                     unitData = allUnitsData[currentUnitIndex];
                 }
                 
-                // 更新UI上的ID顯示
-                document.getElementById('unit-id').textContent = unitData.id;
-                document.getElementById('unit-id-search').value = ''; // 清空搜索欄位
+                // 清空搜索欄位
+                document.getElementById('unit-id-search').value = '';
                 
                 // 更新箭頭按鈕的啟用/禁用狀態
                 updateNavigationButtons();
@@ -897,36 +893,48 @@
         }
         
         // 頁面載入時執行
-        window.addEventListener('DOMContentLoaded', () => {
-            // 初始加載第一個機體
-            loadUnitData();
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 初始加載第一個機體（注意：這是異步的）
+            await loadUnitData();
+            
+            // 讓我們重新綁定事件，確保在資料載入後執行
+            setupEventListeners();
+        });
+        
+        // 設置所有事件監聽器
+        function setupEventListeners() {
+            console.log("Setting up event listeners");
             
             // 設置向前按鈕的點擊事件
-            document.getElementById('prev-unit').addEventListener('click', () => {
+            const prevButton = document.getElementById('prev-unit');
+            prevButton.onclick = () => {
+                console.log("Prev button clicked, current index:", currentUnitIndex);
                 if (currentUnitIndex > 0) {
                     currentUnitIndex--;
                     loadUnitData();
                 }
-            });
+            };
             
             // 設置向後按鈕的點擊事件
-            document.getElementById('next-unit').addEventListener('click', () => {
+            const nextButton = document.getElementById('next-unit');
+            nextButton.onclick = () => {
+                console.log("Next button clicked, current index:", currentUnitIndex);
                 if (currentUnitIndex < allUnitsData.length - 1) {
                     currentUnitIndex++;
                     loadUnitData();
                 }
-            });
+            };
             
             // 搜索按鈕點擊事件
-            document.getElementById('search-btn').addEventListener('click', performSearch);
+            document.getElementById('search-btn').onclick = performSearch;
             
             // 搜索框回車事件
-            document.getElementById('unit-id-search').addEventListener('keyup', (event) => {
+            document.getElementById('unit-id-search').onkeyup = (event) => {
                 if (event.key === 'Enter') {
                     performSearch();
                 }
-            });
-        });
+            };
+        }
         
         // 執行搜索
         function performSearch() {

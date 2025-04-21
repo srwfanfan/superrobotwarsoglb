@@ -1,0 +1,4 @@
+wId,unitId,wname,range,power,bullet,ki_min,type,en_consume,speffect
+w01,grungust_type-0,沖擊飛拳,M,2950,0,0,boxing,0,none
+w02,grungust_type-0,大型能量放射,S,3850,0,0,boxing,30,none
+w03,grungust_type-0,零式斬艦刀,S,5350,0,140,boxing,80,none

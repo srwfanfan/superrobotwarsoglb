@@ -1,39 +1,231 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>機體資料頁面</title>
+    <title>機體資料</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#5E81AC',       // 像素藍
-                        secondary: '#2E3440',     // 深色背景
-                        baseGray: '#434C5E',      // 中性灰
-                        darkBlue: '#4C566A',      // 深藍灰
-                        neonBlue: '#88C0D0',      // 鮮亮藍
-                        techGray: '#D8DEE9',      // 淺灰
-                        pixelGreen: '#A3BE8C',    // 像素綠
-                        pixelRed: '#BF616A',      // 像素紅
-                        pixelYellow: '#EBCB8B'    // 像素黃
+                        primary: '#5D5CDE',
+                        secondary: '#4F4FCB',
+                        'dark-bg': '#181818',
+                        'dark-card': '#252525',
+                        'light-card': '#F5F5F7',
                     },
                     fontFamily: {
-                        pixel: ['"Press Start 2P"', '"VT323"', 'monospace']
+                        sans: ['Roboto', 'Noto Sans TC', 'sans-serif'],
                     },
                     boxShadow: {
-                        'pixel': '4px 4px 0px 0px rgba(0, 0, 0, 0.75)',
-                        'pixel-inset': 'inset 4px 4px 0px 0px rgba(0, 0, 0, 0.5)'
+                        'tech': '0 0 8px rgba(93, 92, 222, 0.4)',
+                        'tech-dark': '0 0 12px rgba(93, 92, 222, 0.6)',
                     }
                 }
-            },
-            darkMode: 'class'
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+        :root {
+            --shimmer-color: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(93, 92, 222, 0.5);
         }
 
-        // 檢測暗模式偏好
+        .dark {
+            --shimmer-color: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(93, 92, 222, 0.5);
+        }
+
+        .tech-shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, var(--shimmer-color), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .glow-border {
+            position: relative;
+        }
+
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(45deg, transparent, var(--border-glow), transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+        }
+
+        .stat-bar {
+            position: relative;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: rgba(93, 92, 222, 0.2);
+        }
+
+        .stat-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #5D5CDE;
+            border-radius: 6px;
+        }
+
+        .hexagonal {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 200%;
+            }
+        }
+
+        .special-ability-box {
+            background: rgba(93, 92, 222, 0.1);
+            border-left: 3px solid #5D5CDE;
+        }
+
+        .dark .special-ability-box {
+            background: rgba(93, 92, 222, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+    <div class="container max-w-lg mx-auto px-4 py-6">
+        <!-- 機體資料卡片 -->
+        <div class="bg-light-card dark:bg-dark-card rounded-lg p-5 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border mb-4">
+            <!-- 機體標題區 -->
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="font-bold text-2xl text-primary" id="unit-name">古鐵</h1>
+                    <p class="text-sm text-gray-600 dark:text-gray-400" id="unit-id">ID: 1 / <span id="name-id">alteisen</span></p>
+                </div>
+                <div class="bg-primary p-2 rounded-md text-white font-bold">
+                    <span id="pilot-series">ATX</span>
+                </div>
+            </div>
+
+            <!-- 機體圖片 -->
+            <div class="relative w-full h-48 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md mb-4 overflow-hidden">
+                <img id="unit-image" src="https://picsum.photos/300/200" alt="古鐵" class="max-h-full object-contain">
+                <p class="absolute bottom-1 right-2 text-xs text-gray-500">※圖片僅供參考，顯示為替代圖</p>
+            </div>
+
+            <!-- 主要數值區 -->
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-md shadow-md">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">耐久</p>
+                    <p class="font-bold text-xl text-primary" id="hp-value">4200</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-md shadow-md">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">能量</p>
+                    <p class="font-bold text-xl text-primary" id="en-value">120</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-md shadow-md">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">裝甲</p>
+                    <p class="font-bold text-xl text-primary" id="armor-value">1500</p>
+                </div>
+            </div>
+
+            <!-- 能力值條區 -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium">攻擊力 (AP)</span>
+                    <span class="text-sm font-bold text-primary" id="ap-value">3.0</span>
+                </div>
+                <div class="stat-bar mb-3">
+                    <div class="stat-fill" id="ap-bar" style="width: 60%"></div>
+                </div>
+                
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium">防禦力 (DP)</span>
+                    <span class="text-sm font-bold text-primary" id="dp-value">1.5</span>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="dp-bar" style="width: 30%"></div>
+                </div>
+            </div>
+
+            <!-- 特殊能力區 -->
+            <div class="special-ability-box p-3 rounded-r-md">
+                <h3 class="font-bold text-sm mb-1">特殊能力</h3>
+                <div class="flex items-center justify-between">
+                    <p class="text-xs text-gray-600 dark:text-gray-400">特殊能力值</p>
+                    <p class="font-bold text-primary" id="sp-abil-value">100000</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 資料更新時間區 -->
+        <div class="text-center text-xs text-gray-500 dark:text-gray-400">
+            資料更新時間: <span id="update-time"></span>
+        </div>
+    </div>
+
+    <script>
+        // 模擬載入CSV數據的機體資料
+        const unitData = {
+            id: 1,
+            nameId: "alteisen",
+            name: "古鐵",
+            image_url: "./unit/images/alteisen.png", // 注意：我們會顯示替代圖片
+            hp: 4200,
+            en: 120,
+            armor: 1500,
+            pilot_series: "atx",
+            ap: 3,
+            dp: 1.5,
+            sp_abil: 100000
+        };
+
+        // 填充頁面數據
+        document.getElementById('unit-name').textContent = unitData.name;
+        document.getElementById('unit-id').textContent = `ID: ${unitData.id} / `;
+        document.getElementById('name-id').textContent = unitData.nameId;
+        document.getElementById('pilot-series').textContent = unitData.pilot_series.toUpperCase();
+        document.getElementById('hp-value').textContent = unitData.hp;
+        document.getElementById('en-value').textContent = unitData.en;
+        document.getElementById('armor-value').textContent = unitData.armor;
+        document.getElementById('ap-value').textContent = unitData.ap.toFixed(1);
+        document.getElementById('dp-value').textContent = unitData.dp.toFixed(1);
+        document.getElementById('sp-abil-value').textContent = unitData.sp_abil.toLocaleString();
+        
+        // 更新進度條
+        document.getElementById('ap-bar').style.width = (unitData.ap / 5 * 100) + '%';
+        document.getElementById('dp-bar').style.width = (unitData.dp / 5 * 100) + '%';
+
+        // 設置更新時間
+        const now = new Date();
+        document.getElementById('update-time').textContent = now.toLocaleString();
+
+        // 設置深色/淺色模式
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
         }
@@ -44,868 +236,6 @@
                 document.documentElement.classList.remove('dark');
             }
         });
-
-        // CSV檔案的URL
-        const csvUrl = './unit/unit.csv';
-        const targetNameId = 'alteisen'; // 要顯示的機體nameId
-        
-        // 在頁面載入後執行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 顯示載入中狀態
-            document.getElementById('loading-status').classList.remove('hidden');
-            
-            // 從外部URL讀取CSV
-            fetch(csvUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`無法載入CSV檔案 (${response.status} ${response.statusText})`);
-                    }
-                    return response.text();
-                })
-                .then(csvText => {
-                    // 解析CSV數據
-                    const result = Papa.parse(csvText, {
-                        header: true,
-                        skipEmptyLines: true
-                    });
-                    
-                    if (!result.data || result.data.length === 0) {
-                        throw new Error('CSV檔案不包含任何資料');
-                    }
-                    
-                    // 查找nameId為Alteisen的機體
-                    const mechData = result.data.find(mech => mech.nameId === targetNameId);
-                    
-                    if (!mechData) {
-                        throw new Error(`找不到nameId為 "${targetNameId}" 的機體`);
-                    }
-                    
-                    // 顯示機體資料
-                    displayMechData(mechData);
-                })
-                .catch(error => {
-                    console.error('載入或解析CSV時出錯:', error);
-                    document.getElementById('error-message').textContent = `載入資料時發生錯誤: ${error.message}`;
-                    document.getElementById('error-message').classList.remove('hidden');
-                })
-                .finally(() => {
-                    // 隱藏載入中狀態
-                    document.getElementById('loading-status').classList.add('hidden');
-                });
-        });
-
-        // 解析特殊能力
-        function parseSpecialAbilities(spAbilCode) {
-            const abilities = [
-                { id: 0, name: '劍', description: '近戰武器傷害+20%' },
-                { id: 1, name: '盾', description: '物理傷害減少30%' },
-                { id: 2, name: '護罩', description: '每回合恢復200HP' },
-                { id: 3, name: '分身', description: '迴避率+25%' },
-                { id: 4, name: '變形', description: '可切換戰鬥形態' },
-                { id: 5, name: '變身', description: '可完全變身為新形態' }
-            ];
-
-            const abilString = spAbilCode.toString().padStart(6, '0');
-            const activeAbilities = [];
-
-            for (let i = 0; i < 6; i++) {
-                if (abilString[i] === '1') {
-                    activeAbilities.push(abilities[i]);
-                }
-            }
-
-            return activeAbilities;
-        }
-
-        // 顯示機體資料
-        function displayMechData(mechData) {
-            // 顯示機體圖片
-            const imageContainer = document.getElementById('mech-image-container');
-            if (mechData.image_url) {
-                imageContainer.innerHTML = `<img src="${mechData.image_url}" alt="${mechData.name}" class="max-h-full max-w-full object-contain">`;
-            }
-
-            // 顯示機體資料
-            const mechNameElem = document.getElementById('mech-name');
-            mechNameElem.textContent = mechData.name;
-            mechNameElem.className = 'data-value-name'; // 使用新的放大樣式
-            
-            document.getElementById('mech-hp').textContent = mechData.hp;
-            document.getElementById('mech-en').textContent = mechData.en;
-            document.getElementById('mech-armor').textContent = mechData.armor;
-            // 駕駛員系列映射
-            const pilotSeriesMap = {
-                'atx': 'ATX系列',
-                'sos': 'SOS系列',
-                'eoa': 'EOA系列',
-                'og': 'OG系列',
-                'default': '通用系列'
-            };
-            
-            // 顯示映射後的駕駛員系列名稱
-            const pilotSeries = mechData.pilot_series.toLowerCase();
-            document.getElementById('mech-pilot').textContent = pilotSeriesMap[pilotSeries] || pilotSeriesMap['default'];
-
-            // 顯示AP和出場點數（藥丸形狀格子表示）
-            // AP處理 - 最大值為6
-            const apValue = parseFloat(mechData.ap);
-            const apContainer = document.getElementById('ap-pills');
-            apContainer.innerHTML = '';
-            for (let i = 1; i <= 6; i++) {
-                const pillClass = i <= apValue ? 'pill-filled' : 'pill-empty';
-                apContainer.innerHTML += `<div class="pill ${pillClass}"></div>`;
-            }
-            
-            // 出場點數處理 - 最大值為3
-            const dpValue = parseFloat(mechData.dp);
-            const dpContainer = document.getElementById('dp-pills');
-            dpContainer.innerHTML = '';
-            for (let i = 1; i <= 3; i++) {
-                let pillClass = 'pill-empty';
-                if (i < dpValue) {
-                    pillClass = 'pill-filled';
-                } else if (i === Math.ceil(dpValue) && dpValue % 1 !== 0) {
-                    // 處理半格情況（如1.5）
-                    pillClass = 'pill-half';
-                }
-                dpContainer.innerHTML += `<div class="pill ${pillClass}"></div>`;
-            }
-
-            // 顯示特殊能力（網格清單格式）
-            const abilString = mechData.sp_abil.toString().padStart(6, '0');
-            const abilitiesList = document.getElementById('special-abilities');
-            abilitiesList.innerHTML = '';
-            
-            // 所有特殊能力的定義
-            const allAbilities = [
-                { name: '劍', index: 0 },
-                { name: '盾', index: 1 },
-                { name: '護罩', index: 2 },
-                { name: '分身', index: 3 },
-                { name: '變形', index: 4 },
-                { name: '變身', index: 5 }
-            ];
-            
-            // 創建特殊能力網格（2x3）
-            const abilitiesGrid = document.createElement('div');
-            abilitiesGrid.className = 'abilities-grid';
-            
-            // 每行兩個能力
-            for (let row = 0; row < 3; row++) {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'abilities-row';
-                
-                for (let col = 0; col < 2; col++) {
-                    const index = row * 2 + col;
-                    const ability = allAbilities[index];
-                    const hasAbility = abilString[ability.index] === '1';
-                    
-                    const abilityItem = document.createElement('div');
-                    abilityItem.className = 'ability-item';
-                    abilityItem.innerHTML = `
-                        <span class="data-label ability-name">${ability.name}：</span>
-                        <span class="ability-value ${hasAbility ? 'has-ability' : 'no-ability'}">${hasAbility ? '有' : '無'}</span>
-                    `;
-                    
-                    rowDiv.appendChild(abilityItem);
-                }
-                
-                abilitiesGrid.appendChild(rowDiv);
-            }
-            
-            abilitiesList.appendChild(abilitiesGrid);
-        }
     </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
-        
-        /* 像素風格全局樣式 */
-        body {
-            background-image: url('./unit/unitbg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: 'VT323', monospace;
-            font-size: 18px;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-        }
-        
-        /* 像素藝術框架 */
-        .frame {
-            aspect-ratio: 1 / 1;
-            position: relative;
-            overflow: hidden;
-            border: 3px solid #5E81AC;
-            box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 0.75);
-            image-rendering: pixelated;
-        }
-        
-        /* 手機視圖特殊調整 */
-        @media (max-width: 640px) {
-            .frame {
-                aspect-ratio: 16 / 9;
-                max-height: 200px;
-            }
-        }
-        
-        /* 自適應高度的框架（不保持正方形） */
-        .frame-auto {
-            position: relative;
-            overflow: hidden;
-            border: 3px solid #5E81AC;
-            box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 0.75);
-            image-rendering: pixelated;
-            aspect-ratio: unset;
-        }
-        
-        @media (max-width: 640px) {
-            .frame-auto {
-                border: 2px solid #5E81AC;
-                box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.75);
-                max-height: none;
-            }
-        }
-        
-        /* 像素邊框 */
-        .frame::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 2px solid #2E3440;
-            pointer-events: none;
-        }
-        
-        /* 像素線條圖案 */
-        .pixel-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                repeating-linear-gradient(to right, transparent, transparent 8px, rgba(94, 129, 172, 0.1) 8px, rgba(94, 129, 172, 0.1) 10px),
-                repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(94, 129, 172, 0.1) 8px, rgba(94, 129, 172, 0.1) 10px);
-            pointer-events: none;
-        }
-        
-        /* 像素面板 */
-        .tech-panel {
-            background-color: #2E3440;
-            border: none;
-            padding: 0 !important;
-        }
-        
-        /* 像素資料項 */
-        .data-item {
-            position: relative;
-            overflow: hidden;
-            border: none;
-            padding-left: 10px !important;
-            border-left: 4px solid #5E81AC;
-            transition: none;
-            background-color: #3B4252 !important;
-        }
-        
-        .data-item:hover {
-            transform: translateX(2px);
-            box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.5);
-        }
-        
-        /* 像素標籤和數值 */
-        .data-label {
-            font-family: 'VT323', monospace;
-            font-size: 14px; /* 統一為14px */
-            color: #88C0D0;
-            text-shadow: 1px 1px 0px #000000;
-        }
-        
-        .data-value {
-            font-family: 'VT323', monospace;
-            font-size: 24px; /* 統一為24px */
-            color: #ECEFF4;
-        }
-        
-        @media (max-width: 640px) {
-            /* 文字大小統一為武器列表內文大小 */
-            .data-label,
-            .ability-name,
-            .weapon-header h3 {
-                font-size: 12px;
-                line-height: 1.1;
-            }
-            
-            .data-value,
-            .ability-value,
-            .data-value-name,
-            .weapon-item {
-                font-size: 12px;
-                line-height: 1.1;
-            }
-            
-            /* 機體名稱保持稍微突出 */
-            .data-value-name {
-                font-weight: 600;
-            }
-            
-            /* 整體佈局調整 */
-            .p-4 {
-                padding: 0.375rem !important;
-            }
-            
-            .space-y-3 > :not([hidden]) ~ :not([hidden]) {
-                --tw-space-y-reverse: 0;
-                margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
-                margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
-            }
-            
-            /* 在手機視圖中移除網格間距 */
-            .grid.gap-3 {
-                gap: 0.25rem !important;
-            }
-            
-            /* 讓所有方框在手機模式下滿寬顯示 */
-            .w-full {
-                width: 100%;
-                max-width: 100%;
-                overflow-x: hidden;
-            }
-            
-            /* 調整所有方框保持相同寬度 */
-            .frame, .frame-auto {
-                width: calc(100% - 0.5rem);
-                margin: 0.25rem;
-                box-sizing: border-box;
-            }
-            
-            .mb-3 {
-                margin-bottom: 0.25rem;
-            }
-            
-            /* 減少容器高度 */
-            .frame {
-                max-height: 160px;
-            }
-        }
-        
-        /* 機體名稱樣式 */
-        .data-value-name {
-            font-family: 'VT323', monospace;
-            font-size: 24px; /* 保持24px */
-            color: #88C0D0; /* 保留藍色強調 */
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        
-        /* 像素標題 */
-        .section-header {
-            position: relative;
-            font-family: 'VT323', monospace;
-            font-size: 14px;
-            letter-spacing: 0;
-            background-color: #5E81AC;
-            padding: 8px;
-            margin: 0;
-            text-transform: uppercase;
-            color: #2E3440;
-            text-shadow: 1px 1px 0px #D8DEE9;
-            border-bottom: 4px solid #4C566A;
-        }
-        
-        /* 移除標題後的三角形，使用像素風格 */
-        .section-header::after {
-            display: none;
-        }
-        
-        /* 像素頁面標題 */
-        .page-title {
-            font-family: 'VT323', monospace;
-            font-size: 18px;
-            letter-spacing: 0;
-            text-transform: uppercase;
-            color: #ECEFF4;
-            text-shadow: 2px 2px 0px #2E3440;
-            padding-left: 16px;
-            border-left: 8px solid #5E81AC;
-            margin-bottom: 24px;
-            line-height: 1.4;
-        }
-        
-        @media (max-width: 640px) {
-            .page-title {
-                font-size: 14px;
-                padding-left: 10px;
-                border-left: 5px solid #5E81AC;
-                margin-bottom: 16px;
-            }
-            
-            body {
-                padding: 8px !important;
-            }
-            
-            .section-header {
-                font-size: 12px;
-                padding: 6px;
-            }
-        }
-        
-        /* 像素加載動畫 */
-        .pixel-spinner {
-            width: 20px;
-            height: 20px;
-            background-color: #88C0D0;
-            position: relative;
-            animation: pixel-spinner-animation 1s steps(8, end) infinite;
-        }
-        
-        @keyframes pixel-spinner-animation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .font-pixel {
-            font-family: 'VT323', monospace;
-            font-size: 12px;
-        }
-        
-        /* 像素武器項目 */
-        .weapon-item {
-            position: relative;
-            padding-left: 16px !important;
-            background-color: #3B4252 !important;
-            cursor: pointer;
-            border: none;
-            transition: none;
-        }
-        
-        .weapon-item::before {
-            content: '►';
-            position: absolute;
-            left: 4px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #5E81AC;
-            font-size: 12px;
-            transition: none;
-        }
-        
-        .weapon-item:hover {
-            background-color: #434C5E !important;
-            color: #88C0D0;
-            transform: translateX(2px);
-        }
-        
-        /* 像素滾動條 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #2E3440;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #5E81AC;
-            border: 2px solid #2E3440;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #81A1C1;
-        }
-        
-        /* 像素按鈕 */
-        .pixel-button {
-            border: 2px solid #88C0D0;
-            background-color: #5E81AC;
-            color: #ECEFF4;
-            padding: 8px 16px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 12px;
-            box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.75);
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .pixel-button:hover {
-            transform: translate(1px, 1px);
-            box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.75);
-        }
-        
-        /* 像素風格的武器頭 */
-        .weapon-header {
-            background-color: #4C566A !important;
-            border-bottom: 2px solid #5E81AC;
-            padding: 8px !important;
-        }
-        
-        .weapon-header h3 {
-            font-family: 'VT323', monospace;
-            font-size: 14px; /* 統一為14px */
-            color: #88C0D0;
-            text-shadow: 1px 1px 0px #2E3440;
-        }
-        
-        /* 像素載入動畫 */
-        .loading-text {
-            color: #A3BE8C;
-            font-family: 'VT323', monospace;
-        }
-        
-        .loading-text::after {
-            content: '';
-            display: inline-block;
-            animation: blink 1s step-end infinite;
-        }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-        
-        /* 像素圖像容器 */
-        .pixel-image-container {
-            background-color: #3B4252;
-            border: 2px solid #4C566A;
-            image-rendering: pixelated;
-        }
-        
-        /* 藥丸格子樣式 */
-        .pills-container {
-            display: flex;
-            gap: 4px;
-            margin-top: 8px;
-        }
-        
-        .pill {
-            width: 24px;
-            height: 14px;
-            border-radius: 4px;
-        }
-        
-        @media (max-width: 640px) {
-            .pills-container {
-                gap: 2px;
-                margin-top: 4px;
-            }
-            
-            .pill {
-                width: 14px;
-                height: 8px;
-                border-radius: 2px;
-                border-width: 1px !important;
-            }
-        }
-        
-        /* AP藥丸樣式 - 藍色主調 */
-        #ap-pills .pill {
-            border: 2px solid #5E81AC;
-        }
-        
-        #ap-pills .pill-filled {
-            background-color: #88C0D0;
-        }
-        
-        #ap-pills .pill-half {
-            background: linear-gradient(to right, #88C0D0 50%, transparent 50%);
-        }
-        
-        /* 出場點數藥丸樣式 - 綠色主調 */
-        #dp-pills .pill {
-            border: 2px solid #8BAA70;
-        }
-        
-        #dp-pills .pill-filled {
-            background-color: #A3BE8C;
-        }
-        
-        #dp-pills .pill-half {
-            background: linear-gradient(to right, #A3BE8C 50%, transparent 50%);
-        }
-        
-        .pill-empty {
-            background-color: transparent;
-        }
-        
-        /* AP與出場點數容器調整高度 */
-        .stats-container {
-            height: auto !important;
-            min-height: 0;
-            padding-bottom: 8px;
-        }
-        
-        /* 特殊能力容器調整高度 */
-        .abilities-container {
-            height: auto !important;
-            min-height: 0;
-            padding-bottom: 8px;
-        }
-        
-        /* 特殊能力網格樣式 */
-        .abilities-grid {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            gap: 8px;
-            padding: 10px;
-            background-color: #3B4252;
-            border-radius: 4px;
-        }
-        
-        .abilities-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        
-        .ability-item {
-            flex: 1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #434C5E;
-            padding: 8px 12px;
-            border-radius: 4px;
-            border-left: 3px solid #5E81AC;
-        }
-        
-        @media (max-width: 640px) {
-            .abilities-grid {
-                gap: 2px;
-                padding: 4px;
-            }
-            
-            .abilities-row {
-                gap: 2px;
-            }
-            
-            .ability-item {
-                padding: 4px 6px;
-                border-radius: 3px;
-                border-left: 2px solid #5E81AC;
-            }
-            
-            .weapon-item {
-                padding: 6px 8px !important;
-                padding-left: 12px !important;
-            }
-            
-            .data-item {
-                padding: 6px !important;
-                padding-left: 6px !important;
-                border-left: 2px solid #5E81AC;
-            }
-            
-            .p-4 {
-                padding: 0.375rem !important;
-            }
-            
-            .p-3 {
-                padding: 0.375rem !important;
-            }
-            
-            .mb-2 {
-                margin-bottom: 0.25rem;
-            }
-            
-            .space-y-6 > :not([hidden]) ~ :not([hidden]) {
-                --tw-space-y-reverse: 0;
-                margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
-                margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
-            }
-        }
-        
-        .ability-name {
-            font-size: 14px;
-        }
-        
-        .ability-value {
-            font-family: 'VT323', monospace;
-            font-size: 24px;
-        }
-        
-        .has-ability {
-            color: #A3BE8C;
-            font-weight: bold;
-        }
-        
-        .no-ability {
-            color: #BF616A;
-        }
-        
-        /* 像素化網格 */
-        .pixel-grid::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(to right, rgba(76, 86, 106, 0.5) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(76, 86, 106, 0.5) 1px, transparent 1px);
-            background-size: 8px 8px;
-            pointer-events: none;
-        }
-    </style>
-</head>
-<body class="text-gray-200 p-4">
-    <div class="w-full">
-        <h1 class="page-title text-3xl font-bold mb-4">超機OG - 機體資料</h1>
-        
-        <!-- 錯誤訊息 -->
-        <div id="error-message" class="bg-red-900/80 text-red-200 p-4 mb-4 rounded-lg hidden"></div>
-        
-        <!-- 載入狀態 -->
-        <div id="loading-status" class="bg-darkBlue/80 text-white p-4 mb-4 rounded-lg hidden">
-            <div class="flex items-center justify-center">
-                <div class="pixel-spinner mr-3"></div>
-                <span class="font-pixel">正在從 CSV 檔案讀取機體資料...</span>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-            <!-- 第一格：機體圖片 -->
-            <div class="frame tech-panel rounded-lg p-4 flex flex-col">
-                <h2 class="section-header text-lg font-semibold mb-3">機體</h2>
-                <div id="mech-image-container" class="flex-grow flex items-center justify-center bg-baseGray/40 overflow-hidden pixel-image-container">
-                    <div class="text-techGray text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p class="mt-2 loading-text">載入中</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 第二格：機體資料 -->
-            <div class="frame tech-panel rounded-lg p-4 flex flex-col">
-                <h2 class="section-header text-lg font-semibold mb-3">機體資料</h2>
-                <div class="flex-grow flex flex-col space-y-3 overflow-y-auto">
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">機體名稱：</span>
-                        <span id="mech-name" class="data-value loading-text">載入中</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">HP：</span>
-                        <span id="mech-hp" class="data-value loading-text">載入中</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">EN：</span>
-                        <span id="mech-en" class="data-value loading-text">載入中</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">裝甲：</span>
-                        <span id="mech-armor" class="data-value loading-text">載入中</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">駕駛員：</span>
-                        <span id="mech-pilot" class="data-value loading-text">載入中</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 第三格：AP、出場點數 -->
-            <div class="frame-auto tech-panel rounded-lg p-4 flex flex-col stats-container">
-                <h2 class="section-header text-lg font-semibold mb-3">AP與出場點數</h2>
-                <div class="flex flex-col space-y-6 overflow-y-auto p-3">
-                    <div>
-                        <div class="flex items-center mb-2">
-                            <span class="data-label font-medium mr-4">AP：</span>
-                            <span id="mech-ap" class="data-value hidden">3</span>
-                        </div>
-                        <div id="ap-pills" class="pills-container">
-                            <!-- 由JavaScript填充 -->
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center mb-2">
-                            <span class="data-label font-medium mr-4">出場點數：</span>
-                            <span id="mech-dp" class="data-value hidden">1.5</span>
-                        </div>
-                        <div id="dp-pills" class="pills-container">
-                            <!-- 由JavaScript填充 -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 第四格：特殊能力 -->
-            <div class="frame-auto tech-panel rounded-lg p-4 flex flex-col abilities-container">
-                <h2 class="section-header text-lg font-semibold mb-3">特殊能力</h2>
-                <div class="overflow-y-auto">
-                    <ul id="special-abilities" class="space-y-3">
-                        <li class="data-item bg-baseGray/40 p-3 rounded-md loading-text">載入中</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- 第五格：武器列表 -->
-            <div class="frame tech-panel rounded-lg p-4 flex flex-col">
-                <h2 class="section-header text-lg font-semibold mb-3">武器列表</h2>
-                <div class="flex-grow overflow-y-auto">
-                    <ul class="space-y-3">
-                        <li class="weapon-item bg-baseGray/40 p-3 rounded-md cursor-pointer hover:bg-primary/20 transition-colors">
-                            雙聯裝光束炮
-                        </li>
-                        <li class="weapon-item bg-baseGray/40 p-3 rounded-md cursor-pointer hover:bg-primary/20 transition-colors">
-                            高能光束劍
-                        </li>
-                        <li class="weapon-item bg-baseGray/40 p-3 rounded-md cursor-pointer hover:bg-primary/20 transition-colors">
-                            頭部火神砲
-                        </li>
-                        <li class="weapon-item bg-baseGray/40 p-3 rounded-md cursor-pointer hover:bg-primary/20 transition-colors">
-                            反物質導彈
-                        </li>
-                        <li class="weapon-item bg-baseGray/40 p-3 rounded-md cursor-pointer hover:bg-primary/20 transition-colors">
-                            光束連射砲
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- 第六格：武器資料 -->
-            <div class="frame tech-panel rounded-lg p-4 flex flex-col">
-                <h2 class="section-header text-lg font-semibold mb-3">武器資料</h2>
-                <div class="flex-grow flex flex-col space-y-3 overflow-y-auto">
-                    <div class="weapon-header p-3 rounded-md">
-                        <h3 class="font-bold">雙聯裝光束炮</h3>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">攻擊力：</span>
-                        <span class="data-value">3200</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">射程：</span>
-                        <span class="data-value">1-5</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">彈藥：</span>
-                        <span class="data-value">∞</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">EN消耗：</span>
-                        <span class="data-value">45</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">命中率：</span>
-                        <span class="data-value">85%</span>
-                    </div>
-                    <div class="data-item bg-baseGray/40 p-3 rounded-md">
-                        <span class="data-label font-medium">特殊效果：</span>
-                        <span class="data-value">對空 +15% 傷害</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 底部狀態指示 -->
-        <div class="mt-6 text-center text-xs text-techGray">
-            <p>超級機械人大戰OG連線對戰 © SRWOG ONLINE v1.0</p>
-        </div>
-    </div>
 </body>
 </html>

@@ -430,10 +430,7 @@
             </div>
         </div>
 
-        <!-- 資料更新時間區 -->
-        <div class="text-center text-xs text-gray-500 dark:text-gray-400">
-            資料更新時間: <span id="update-time"></span>
-        </div>
+
     </div>
 
     <script>
@@ -806,9 +803,7 @@
             showWeaponDetails(weaponsData[0]);
         }
         
-        // 設置更新時間
-        const now = new Date();
-        document.getElementById('update-time').textContent = now.toLocaleString();
+
 
         // 設置為默認深色模式
         document.documentElement.classList.add('dark');

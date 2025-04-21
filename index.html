@@ -899,49 +899,46 @@
         });
         }
         
+        // 直接定義導航函數
+        function goToPrevUnit() {
+            console.log("Going to previous unit, current index:", currentUnitIndex);
+            if (currentUnitIndex > 0) {
+                currentUnitIndex--;
+                loadUnitData();
+            }
+        }
+        
+        function goToNextUnit() {
+            console.log("Going to next unit, current index:", currentUnitIndex);
+            if (currentUnitIndex < allUnitsData.length - 1) {
+                currentUnitIndex++;
+                loadUnitData();
+            }
+        }
+        
         // 頁面載入時執行
         window.addEventListener('DOMContentLoaded', async () => {
-            // 初始加載第一個機體（注意：這是異步的）
+            console.log("DOM Content Loaded");
+            
+            // 初始加載第一個機體
             await loadUnitData();
             
-            // 讓我們重新綁定事件，確保在資料載入後執行
-            setupEventListeners();
-        });
-        
-        // 設置所有事件監聽器
-        function setupEventListeners() {
-            console.log("Setting up event listeners");
-            
-            // 設置向前按鈕的點擊事件
-            const prevButton = document.getElementById('prev-unit');
-            prevButton.onclick = () => {
-                console.log("Prev button clicked, current index:", currentUnitIndex);
-                if (currentUnitIndex > 0) {
-                    currentUnitIndex--;
-                    loadUnitData();
-                }
-            };
-            
-            // 設置向後按鈕的點擊事件
-            const nextButton = document.getElementById('next-unit');
-            nextButton.onclick = () => {
-                console.log("Next button clicked, current index:", currentUnitIndex);
-                if (currentUnitIndex < allUnitsData.length - 1) {
-                    currentUnitIndex++;
-                    loadUnitData();
-                }
-            };
+            // 直接綁定事件處理函數到按鈕
+            document.getElementById('prev-unit').addEventListener('click', goToPrevUnit);
+            document.getElementById('next-unit').addEventListener('click', goToNextUnit);
             
             // 搜索按鈕點擊事件
-            document.getElementById('search-btn').onclick = performSearch;
+            document.getElementById('search-btn').addEventListener('click', performSearch);
             
             // 搜索框回車事件
-            document.getElementById('unit-id-search').onkeyup = (event) => {
+            document.getElementById('unit-id-search').addEventListener('keyup', (event) => {
                 if (event.key === 'Enter') {
                     performSearch();
                 }
-            };
-        }
+            });
+            
+            console.log("All event listeners set up");
+        });
         
         // 執行搜索
         function performSearch() {

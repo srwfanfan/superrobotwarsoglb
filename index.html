@@ -251,6 +251,45 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 武器資訊區 -->
+            <div class="mt-4">
+                <h3 class="font-bold text-sm mb-2 text-primary-glow">武器資訊</h3>
+                <div class="grid grid-cols-1 gap-2" id="weapons-list">
+                    <!-- 武器列表會由JavaScript生成 -->
+                </div>
+                
+                <!-- 武器參數顯示區 -->
+                <div class="mt-3 bg-white bg-opacity-10 dark:bg-gray-800 dark:bg-opacity-10 backdrop-blur-sm p-3 rounded-md hidden" id="weapon-details">
+                    <div class="text-sm font-medium text-primary-glow mb-1">武器參數</div>
+                    <div class="grid grid-cols-3 gap-x-3 gap-y-1.5 text-xs">
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">攻擊力:</span>
+                            <span id="weapon-power" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">彈藥:</span>
+                            <span id="weapon-bullet" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">氣力:</span>
+                            <span id="weapon-ki" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">類型:</span>
+                            <span id="weapon-type" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">EN消耗:</span>
+                            <span id="weapon-en" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">特效:</span>
+                            <span id="weapon-effect" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 資料更新時間區 -->
@@ -402,6 +441,95 @@
         // 創建DP格子：5格，在50%寬度的容器中，並相應調整寬度
         createStatBlocks('dp-blocks', 5, unitData.dp, '18%');
 
+        // 武器資料
+        const weaponsData = [
+            { wId: "w01", unitId: "alteisen", wname: "分裂飛彈", range: "L", power: 1900, bullet: 6, ki_min: 0, type: "shoot", en_consume: 0, speffect: "none" },
+            { wId: "w02", unitId: "alteisen", wname: "雷刃角", range: "S", power: 2200, bullet: 0, ki_min: 0, type: "boxing", en_consume: 0, speffect: "none" },
+            { wId: "w03", unitId: "alteisen", wname: "3連機關炮", range: "M", power: 2400, bullet: 5, ki_min: 0, type: "shoot", en_consume: 0, speffect: "none" },
+            { wId: "w04", unitId: "alteisen", wname: "左輪打摏機", range: "M", power: 3200, bullet: 3, ki_min: 0, type: "shoot", en_consume: 0, speffect: "none" },
+            { wId: "w05", unitId: "alteisen", wname: "指向性地雷", range: "S", power: 3900, bullet: 2, ki_min: 110, type: "shoot", en_consume: 0, speffect: "none" }
+        ];
+        
+        // 生成武器列表
+        const renderWeapons = () => {
+            const weaponsList = document.getElementById('weapons-list');
+            weaponsList.innerHTML = '';
+            
+            weaponsData.forEach((weapon, index) => {
+                const weaponItem = document.createElement('div');
+                weaponItem.className = 'bg-white bg-opacity-15 dark:bg-gray-800 dark:bg-opacity-15 backdrop-blur-sm px-3 py-2 rounded-md flex justify-between items-center cursor-pointer hover:bg-opacity-25 transition-all duration-200';
+                weaponItem.setAttribute('data-weapon-id', weapon.wId);
+                
+                // 武器名稱和射程
+                const weaponNameRange = document.createElement('div');
+                weaponNameRange.className = 'flex items-center justify-between w-full';
+                
+                const weaponName = document.createElement('span');
+                weaponName.className = 'font-medium text-sm text-primary-glow';
+                weaponName.style.textShadow = '0 0 3px rgba(77, 159, 255, 0.5)';
+                weaponName.textContent = weapon.wname;
+                
+                const weaponRange = document.createElement('span');
+                weaponRange.className = 'text-xs px-1.5 py-0.5 rounded-sm bg-primary bg-opacity-20 text-primary-glow ml-2';
+                weaponRange.textContent = weapon.range;
+                
+                weaponNameRange.appendChild(weaponName);
+                weaponNameRange.appendChild(weaponRange);
+                
+                weaponItem.appendChild(weaponNameRange);
+                
+                // 添加鼠標滑過/觸控事件
+                weaponItem.addEventListener('mouseenter', () => showWeaponDetails(weapon));
+                weaponItem.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // 防止觸控設備的點擊事件
+                    showWeaponDetails(weapon);
+                });
+                
+                weaponsList.appendChild(weaponItem);
+            });
+        };
+        
+        // 顯示武器詳細參數
+        const showWeaponDetails = (weapon) => {
+            const detailsContainer = document.getElementById('weapon-details');
+            detailsContainer.classList.remove('hidden');
+            
+            // 填充武器參數
+            document.getElementById('weapon-power').textContent = weapon.power;
+            document.getElementById('weapon-bullet').textContent = weapon.bullet;
+            document.getElementById('weapon-ki').textContent = weapon.ki_min;
+            
+            // 類型轉換為中文
+            let typeText = '';
+            switch(weapon.type) {
+                case 'shoot':
+                    typeText = '射擊';
+                    break;
+                case 'boxing':
+                    typeText = '格鬥';
+                    break;
+                default:
+                    typeText = weapon.type;
+            }
+            document.getElementById('weapon-type').textContent = typeText;
+            
+            document.getElementById('weapon-en').textContent = weapon.en_consume;
+            
+            // 特效轉換為中文
+            let effectText = '';
+            switch(weapon.speffect) {
+                case 'none':
+                    effectText = '無';
+                    break;
+                default:
+                    effectText = weapon.speffect;
+            }
+            document.getElementById('weapon-effect').textContent = effectText;
+        };
+        
+        // 初始化武器列表
+        renderWeapons();
+        
         // 設置更新時間
         const now = new Date();
         document.getElementById('update-time').textContent = now.toLocaleString();

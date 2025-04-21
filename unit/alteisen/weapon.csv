@@ -1,4 +1,4 @@
-wId,wunitId,wname,range,power,bullet,ki_min,type,en_consume,speffect
+wId,unitId,wname,range,power,bullet,ki_min,type,en_consume,speffect
 w01,alteisen,分裂飛彈,L,1900,6,0,shoot,0,none
 w02,alteisen,雷刃角,S,2200,0,0,boxing,0,none
 w03,alteisen,3連機關炮,M,2400,5,0,shoot,0,none

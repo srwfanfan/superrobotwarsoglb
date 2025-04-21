@@ -169,6 +169,9 @@
                 <div>
                     <h1 class="font-bold text-2xl text-primary-glow drop-shadow-lg" id="unit-name" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">古鐵</h1>
                 </div>
+                <div class="text-sm font-medium bg-primary bg-opacity-10 px-3 py-1 rounded-full text-primary-glow" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5); box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <span id="pilot-series-display">ATX</span> 系列
+                </div>
             </div>
 
             <!-- 機體圖片 -->
@@ -192,27 +195,27 @@
                 </div>
             </div>
 
-            <!-- 駕駛員系列標示 -->
-            <div class="mb-2">
-                <div class="text-sm font-medium bg-primary bg-opacity-10 inline-block px-3 py-1 rounded-full text-primary-glow" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5); box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
-                    <span id="pilot-series-display">ATX</span> 系列
-                </div>
-            </div>
-            
             <!-- 能力值格子區 -->
             <div class="mb-4">
-                <div class="mb-1">
-                    <span class="text-sm font-medium">行動點 (AP)</span>
+                <div class="flex mb-1 gap-4">
+                    <div class="w-1/2">
+                        <span class="text-sm font-medium">行動點 (AP)</span>
+                    </div>
+                    <div class="w-1/2">
+                        <span class="text-sm font-medium">部署點 (DP)</span>
+                    </div>
                 </div>
-                <div class="flex space-x-1 mb-3" id="ap-blocks">
-                    <!-- AP格子會由JavaScript生成 -->
-                </div>
-                
-                <div class="mb-1">
-                    <span class="text-sm font-medium">部署點 (DP)</span>
-                </div>
-                <div class="flex space-x-1" id="dp-blocks">
-                    <!-- DP格子會由JavaScript生成 -->
+                <div class="flex gap-4">
+                    <div class="w-1/2">
+                        <div class="flex space-x-1" id="ap-blocks">
+                            <!-- AP格子會由JavaScript生成 -->
+                        </div>
+                    </div>
+                    <div class="w-1/2">
+                        <div class="flex space-x-1" id="dp-blocks">
+                            <!-- DP格子會由JavaScript生成 -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -387,11 +390,11 @@
             }
         };
         
-        // 創建AP格子：6格，每格寬度16.66%
-        createStatBlocks('ap-blocks', 6, unitData.ap, '16%');
+        // 創建AP格子：6格，在50%寬度的容器中，每格設置為較窄的寬度
+        createStatBlocks('ap-blocks', 6, unitData.ap, '15%');
         
-        // 創建DP格子：3格，每格寬度33.33%
-        createStatBlocks('dp-blocks', 3, unitData.dp, '32%');
+        // 創建DP格子：5格，在50%寬度的容器中，並相應調整寬度
+        createStatBlocks('dp-blocks', 5, unitData.dp, '18%');
 
         // 設置更新時間
         const now = new Date();

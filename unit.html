@@ -542,7 +542,7 @@
                 updateNavigationButtons();
                 
                 // 加載武器數據
-                const weaponsData = await loadWeaponsData(unitData.nameId);
+                const weaponsData = await loadWeaponsData(unitData.id);
                 
                 // 渲染頁面
                 renderUnitData(unitData, weaponsData);
@@ -583,19 +583,23 @@
         }
         
         // 加載武器數據
-        async function loadWeaponsData(nameId) {
+        async function loadWeaponsData(wunitId) {
             try {
-                // 注意: nameId 是變數，路徑是動態構建的
-                const response = await fetch(`./unit/${nameId}/weapon.csv`);
+                // 使用 wunitId 構建路徑
+                const response = await fetch(`./weapon.csv`);
                 if (!response.ok) {
                     throw new Error(`Failed to load weapon data: ${response.status} ${response.statusText}`);
                 }
                 
                 const csvText = await response.text();
-                return parseCSV(csvText);
+                const allWeapons = parseCSV(csvText);
+                
+                // 篩選出屬於當前機體的武器
+                const unitWeapons = allWeapons.filter(weapon => weapon.wunitId == wunitId);
+                return unitWeapons;
                 
             } catch (error) {
-                console.error(`Error loading weapons for ${nameId}:`, error);
+                console.error(`Error loading weapons for unit ID ${wunitId}:`, error);
                 return []; // 如果無法加載，返回空數組
             }
         }

@@ -486,13 +486,18 @@
             // 填充頁面數據
             document.getElementById('pilot-name').textContent = pilotData.name;
             document.getElementById('unit-series').textContent = pilotData.unit_series.toUpperCase();
-            document.getElementById('pilot-level').textContent = pilotData.level;
-            document.getElementById('pilot-sp').textContent = pilotData.sp;
+            // 使用傳入的等級或預設為30
+            const pilotLevel = parseInt(pilotData.level) || 30;
+            document.getElementById('pilot-level').textContent = pilotLevel;
             
-            // 設置經驗值
-            const currentExp = pilotData.exp;
-            const nextLevelExp = pilotData.next_level_exp;
-            const remainingExp = nextLevelExp - currentExp;
+            // 計算SP值 = 50 + Math.floor((level/2)*5)，上限為255
+            const calculatedSP = Math.min(255, 50 + Math.floor((pilotLevel/2)*5));
+            document.getElementById('pilot-sp').textContent = calculatedSP;
+            
+            // 設置經驗值，預設值為14500，還差500
+            const currentExp = pilotData.exp || 14500;
+            const remainingExp = pilotData.remaining_exp || 500;
+            const nextLevelExp = currentExp + remainingExp;
             const expPercentage = (currentExp / nextLevelExp) * 100;
             
             document.getElementById('exp-value').textContent = `${currentExp}/${nextLevelExp}`;
@@ -500,7 +505,7 @@
             document.getElementById('exp-remaining').textContent = remainingExp;
             
             // 設置駕駛員圖片
-            const imgPath = pilotData.image_url || `./pilot/images/${pilotData.nameId}.png`;
+            const imgPath = pilotData.image_url || `./pilot/images/${pilotData.p_nameId}.png`;
             const imageElement = document.getElementById('pilot-image');
             const loadingSpinner = document.getElementById('image-loading');
             
@@ -534,23 +539,45 @@
             imageElement.src = imgPath;
             imageElement.alt = pilotData.name;
             
-            // 渲染精神指令
+            // 解析並渲染精神指令
             const spiritCommandsContainer = document.getElementById('spirit-commands');
             spiritCommandsContainer.innerHTML = '';
             
             if (pilotData.spirit_commands) {
+                // 分割每個精神指令
                 const spiritCommands = pilotData.spirit_commands.split('|');
-                spiritCommands.forEach(command => {
-                    if (command.trim()) {
+                
+                // 處理每個精神指令及其習得等級
+                spiritCommands.forEach(commandInfo => {
+                    const commandData = commandInfo.trim();
+                    if (!commandData) return;
+                    
+                    // 匹配指令名稱和習得等級，例如 "加速(5)"
+                    const match = commandData.match(/(.+)\((\d+)\)/);
+                    if (match) {
+                        const commandName = match[1];
+                        const requiredLevel = parseInt(match[2]);
+                        
+                        // 創建指令標籤
                         const commandTag = document.createElement('span');
-                        commandTag.className = 'cmd-tag spirit-tag';
-                        commandTag.textContent = command.trim();
+                        
+                        // 檢查駕駛員等級是否足夠習得該指令
+                        if (pilotLevel >= requiredLevel) {
+                            commandTag.className = 'cmd-tag spirit-tag';
+                            commandTag.title = `習得等級: ${requiredLevel}`;
+                        } else {
+                            // 未習得的指令顯示為灰色
+                            commandTag.className = 'cmd-tag spirit-tag opacity-30';
+                            commandTag.title = `需要等級: ${requiredLevel}`;
+                        }
+                        
+                        commandTag.textContent = commandName;
                         spiritCommandsContainer.appendChild(commandTag);
                     }
                 });
             }
             
-            // 渲染行動指令
+            // 解析並渲染行動指令
             const actionCommandsContainer = document.getElementById('action-commands');
             actionCommandsContainer.innerHTML = '';
             
@@ -561,20 +588,64 @@
                 '瞄準', '盾牌', '切返', '底力'
             ];
             
-            // 從駕駛員數據中獲取可用的行動指令
-            const availableCommands = pilotData.action_commands 
-                ? pilotData.action_commands.split('|').map(cmd => cmd.trim())
-                : allActionCommands; // 如果沒有數據，預設所有指令都可用
+            // 建立行動指令的可用次數映射
+            const commandCountMap = {};
             
-            // 創建每個指令的標籤，可用的會高亮，不可用的會變暗
+            // 初始化所有行動指令的可用次數為0
+            allActionCommands.forEach(cmd => {
+                commandCountMap[cmd] = 0;
+            });
+            
+            if (pilotData.action_commands) {
+                // 分割每個行動指令
+                const actionCommands = pilotData.action_commands.split('|');
+                
+                // 處理每個行動指令及其習得等級
+                actionCommands.forEach(commandInfo => {
+                    const commandData = commandInfo.trim();
+                    if (!commandData) return;
+                    
+                    // 匹配指令名稱和習得等級，例如 "攻擊(1'10'23)"
+                    const match = commandData.match(/(.+)\(([^)]+)\)/);
+                    if (match) {
+                        const commandName = match[1];
+                        const levelStr = match[2];
+                        
+                        // 如果是 "-" 表示無法習得
+                        if (levelStr === '-') {
+                            return;
+                        }
+                        
+                        // 分割多個習得等級，例如 "1'10'23" => [1, 10, 23]
+                        const requiredLevels = levelStr.split("'").map(level => parseInt(level));
+                        
+                        // 計算駕駛員當前等級可以習得該指令的次數
+                        let count = 0;
+                        requiredLevels.forEach(reqLevel => {
+                            if (pilotLevel >= reqLevel) {
+                                count++;
+                            }
+                        });
+                        
+                        // 更新行動指令的可用次數
+                        commandCountMap[commandName] = count;
+                    }
+                });
+            }
+            
+            // 創建每個行動指令的標籤，並顯示可用次數
             allActionCommands.forEach(command => {
                 const commandTag = document.createElement('span');
-                if (availableCommands.includes(command)) {
+                const count = commandCountMap[command];
+                
+                if (count > 0) {
                     commandTag.className = 'cmd-tag action-tag';
+                    commandTag.textContent = `${command} (${count})`;
                 } else {
                     commandTag.className = 'cmd-tag action-tag opacity-30';
+                    commandTag.textContent = command;
                 }
-                commandTag.textContent = command;
+                
                 actionCommandsContainer.appendChild(commandTag);
             });
         }

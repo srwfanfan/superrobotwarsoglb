@@ -408,28 +408,104 @@
     </div>
 
     <script>
-        // 模擬載入CSV數據的機體資料
-        const unitData = {
-            id: 1,
-            nameId: "alteisen",
-            name: "古鐵",
-            image_url: "./unit/images/alteisen.png", // 注意：我們會顯示替代圖片
-            hp: 4200,
-            en: 120,
-            armor: 1500,
-            pilot_series: "atx",
-            ap: 3,
-            dp: 1.5,
-            sp_abil: 100000
-        };
-
-        // 填充頁面數據
-        document.getElementById('unit-name').textContent = unitData.name;
-        document.getElementById('pilot-series-display').textContent = unitData.pilot_series.toUpperCase();
-        document.getElementById('hp-value').textContent = unitData.hp;
-        document.getElementById('en-value').textContent = unitData.en;
-        document.getElementById('armor-value').textContent = unitData.armor;
-        // AP和DP值不再顯示為數字，而是顯示為格子
+        // 解析CSV數據
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            const results = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = line.split(',').map(v => v.trim());
+                const entry = {};
+                
+                for (let j = 0; j < headers.length; j++) {
+                    let value = values[j];
+                    // 嘗試轉換數值型字段
+                    if (!isNaN(value) && value !== '') {
+                        // 檢查是否為浮點數
+                        if (value.includes('.')) {
+                            value = parseFloat(value);
+                        } else {
+                            value = parseInt(value);
+                        }
+                    }
+                    entry[headers[j]] = value;
+                }
+                
+                results.push(entry);
+            }
+            
+            return results;
+        }
+        
+        // 加載機體數據
+        async function loadUnitData() {
+            try {
+                const response = await fetch('./unit/unit.csv');
+                if (!response.ok) {
+                    throw new Error(`Failed to load unit data: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                const unitsData = parseCSV(csvText);
+                
+                // 這裡假設第一個機體是要顯示的，實際應用中可能需要根據URL參數或者其他邏輯來決定
+                const unitData = unitsData[0];
+                
+                // 加載武器數據
+                const weaponsData = await loadWeaponsData(unitData.nameId);
+                
+                // 渲染頁面
+                renderUnitData(unitData, weaponsData);
+                
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('unit-name').textContent = "載入錯誤";
+                // 顯示錯誤信息在頁面上
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'bg-negative bg-opacity-20 p-3 rounded-md text-negative-glow';
+                errorDiv.textContent = `無法載入數據: ${error.message}`;
+                document.querySelector('.container').appendChild(errorDiv);
+            }
+        }
+        
+        // 加載武器數據
+        async function loadWeaponsData(nameId) {
+            try {
+                // 注意: nameId 是變數，路徑是動態構建的
+                const response = await fetch(`./${nameId}/weapon.csv`);
+                if (!response.ok) {
+                    throw new Error(`Failed to load weapon data: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                return parseCSV(csvText);
+                
+            } catch (error) {
+                console.error(`Error loading weapons for ${nameId}:`, error);
+                return []; // 如果無法加載，返回空數組
+            }
+        }
+        
+        // 使用加載的數據渲染頁面
+        function renderUnitData(unitData, weaponsData) {
+            // 填充頁面數據
+            document.getElementById('unit-name').textContent = unitData.name;
+            document.getElementById('pilot-series-display').textContent = unitData.pilot_series.toUpperCase();
+            document.getElementById('hp-value').textContent = unitData.hp;
+            document.getElementById('en-value').textContent = unitData.en;
+            document.getElementById('armor-value').textContent = unitData.armor;
+            
+            // 設置機體圖片
+            const imgPath = unitData.image_url || `./unit/images/${unitData.nameId}.png`;
+            document.getElementById('unit-image').src = imgPath;
+            document.getElementById('unit-image').alt = unitData.name;
+            
+            // 構建武器數據全局變數以供後續使用
+            window.weaponsData = weaponsData;
         
         // 解析特殊能力值
         const parseSpecialAbilities = (spAbilValue) => {
@@ -550,14 +626,7 @@
         // 創建DP格子：5格，在50%寬度的容器中，並相應調整寬度
         createStatBlocks('dp-blocks', 5, unitData.dp, '18%');
 
-        // 武器資料
-        const weaponsData = [
-            { wId: "w01", unitId: "alteisen", wname: "分裂飛彈", range: "L", power: 1900, bullet: 6, ki_min: 0, type: "shoot", en_consume: 0, speffect: "none" },
-            { wId: "w02", unitId: "alteisen", wname: "雷刃角", range: "S", power: 2200, bullet: 0, ki_min: 0, type: "boxing", en_consume: 0, speffect: "none" },
-            { wId: "w03", unitId: "alteisen", wname: "3連機關炮", range: "M", power: 2400, bullet: 5, ki_min: 0, type: "shoot", en_consume: 0, speffect: "none" },
-            { wId: "w04", unitId: "alteisen", wname: "左輪打摏機", range: "M", power: 3200, bullet: 3, ki_min: 0, type: "shoot", en_consume: 0, speffect: "none" },
-            { wId: "w05", unitId: "alteisen", wname: "指向性地雷", range: "S", power: 3900, bullet: 2, ki_min: 110, type: "shoot", en_consume: 0, speffect: "none" }
-        ];
+        // 使用從CSV載入的武器數據
         
         // 生成武器列表
         const renderWeapons = () => {
@@ -690,6 +759,10 @@
             // 不論系統設置如何，我們都維持深色模式
             document.documentElement.classList.add('dark');
         });
+        }
+        
+        // 頁面載入時執行
+        window.addEventListener('DOMContentLoaded', loadUnitData);
     </script>
 </body>
 </html>

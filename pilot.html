@@ -612,11 +612,11 @@
                             return;
                         }
                         
-                        // 分割多個習得等級，例如 "1'10'23" => [1, 10, 23]
+                        // 分割多個習得等級，例如 "1-10-23" => [1, 10, 23]
                         console.log(`Processing action command: ${commandName}, levels: ${levelStr}`);
                         
-                        // 使用正確的分隔符 - 標準單引號
-                        const requiredLevels = levelStr.split("'").map(level => {
+                        // 使用正確的分隔符 - 連字符
+                        const requiredLevels = levelStr.split("-").map(level => {
                             if (!level.trim()) return null; // 忽略空字串
                             const parsed = parseInt(level.trim());
                             console.log(`Parsed level: ${parsed}`);

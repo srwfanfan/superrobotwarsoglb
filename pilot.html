@@ -484,7 +484,7 @@
         // 使用加載的數據渲染頁面
         function renderPilotData(pilotData) {
             // 填充頁面數據
-            document.getElementById('pilot-name').textContent = pilotData.name;
+            document.getElementById('pilot-name').textContent = pilotData.p_name;
             document.getElementById('unit-series').textContent = pilotData.unit_series.toUpperCase();
             // 使用傳入的等級或預設為30
             const pilotLevel = parseInt(pilotData.level) || 30;
@@ -537,7 +537,7 @@
             
             // 設置圖片源和替代文字
             imageElement.src = imgPath;
-            imageElement.alt = pilotData.name;
+            imageElement.alt = pilotData.p_name;
             
             // 解析並渲染精神指令
             const spiritCommandsContainer = document.getElementById('spirit-commands');

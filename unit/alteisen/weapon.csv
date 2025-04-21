@@ -1,0 +1,6 @@
+wId,unitId,wname,range,power,bullet,ki_min,type,en_consume,speffect
+w01,alteisen,分裂飛彈,L,1900,6,0,shoot,0,none
+w02,alteisen,雷刃角,S,2200,0,0,boxing,0,none
+w03,alteisen,3連機關炮,M,2400,5,0,shoot,0,none
+w04,alteisen,左輪打摏機,M,3200,3,0,shoot,0,none
+w05,alteisen,指向性地雷,S,3900,2,110,shoot,0,none

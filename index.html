@@ -264,31 +264,31 @@
                 </div>
                 
                 <!-- 武器參數顯示區 -->
-                <div class="special-ability-box p-3 rounded-r-md hidden" id="weapon-details">
+                <div class="special-ability-box p-3 rounded-r-md" id="weapon-details">
                     <h3 class="font-bold text-sm mb-2">武器參數</h3>
                     <div class="grid grid-cols-3 gap-x-3 gap-y-1.5 text-xs">
                         <div>
-                            <span class="text-gray-500 dark:text-gray-400">攻擊力:</span>
+                            <span class="text-gray-800 dark:text-gray-200">攻擊力:</span>
                             <span id="weapon-power" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 dark:text-gray-400">彈藥:</span>
+                            <span class="text-gray-800 dark:text-gray-200">彈藥:</span>
                             <span id="weapon-bullet" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 dark:text-gray-400">氣力:</span>
+                            <span class="text-gray-800 dark:text-gray-200">氣力:</span>
                             <span id="weapon-ki" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 dark:text-gray-400">類型:</span>
+                            <span class="text-gray-800 dark:text-gray-200">類型:</span>
                             <span id="weapon-type" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 dark:text-gray-400">EN消耗:</span>
+                            <span class="text-gray-800 dark:text-gray-200">EN消耗:</span>
                             <span id="weapon-en" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                         <div>
-                            <span class="text-gray-500 dark:text-gray-400">特效:</span>
+                            <span class="text-gray-800 dark:text-gray-200">特效:</span>
                             <span id="weapon-effect" class="ml-1 font-medium text-primary-glow"></span>
                         </div>
                     </div>
@@ -469,8 +469,7 @@
                 weaponNameRange.className = 'flex items-center justify-between';
                 
                 const weaponName = document.createElement('span');
-                weaponName.className = 'font-medium text-xs text-primary-glow truncate';
-                weaponName.style.textShadow = '0 0 3px rgba(77, 159, 255, 0.5)';
+                weaponName.className = 'font-medium text-xs text-gray-800 dark:text-gray-200 truncate';
                 weaponName.style.maxWidth = '70%';
                 weaponName.textContent = weapon.wname;
                 
@@ -534,6 +533,11 @@
         
         // 初始化武器列表
         renderWeapons();
+        
+        // 初始化時顯示第一個武器的參數
+        if (weaponsData.length > 0) {
+            showWeaponDetails(weaponsData[0]);
+        }
         
         // 設置更新時間
         const now = new Date();

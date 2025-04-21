@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機體資料</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4D9FFF',  // 更亮的藍色
+                        'primary-glow': '#7BB5FF',
+                        'negative': '#B32222', // 更暗的紅色
+                        'negative-glow': '#CC3333', // 偏暗的紅色
+                        secondary: '#2F5F9E',
+                        'dark-bg': '#1E1E24',
+                        'dark-card': '#303040',
+                        'light-card': '#E0E0E5',
+                        'tech-gray': '#74747A',
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'tech': '0 0 8px rgba(61, 123, 202, 0.4)',
+                        'tech-dark': '0 0 12px rgba(61, 123, 202, 0.6)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+        :root {
+            --shimmer-color: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(61, 123, 202, 0.5);
+        }
+
+        .dark {
+            --shimmer-color: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(61, 123, 202, 0.5);
+        }
+        
+        body {
+            background-image: url('./unit/unitbg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .tech-shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, var(--shimmer-color), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .glow-border {
+            position: relative;
+        }
+
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(45deg, transparent, var(--border-glow), transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+        }
+
+        .stat-bar {
+            position: relative;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: rgba(61, 123, 202, 0.2);
+        }
+
+        .stat-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #3D7BCA;
+            border-radius: 6px;
+        }
+
+        .hexagonal {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 200%;
+            }
+        }
+
+        .special-ability-box {
+            background-color: rgba(61, 123, 202, 0.1);
+            border-left: 3px solid #4D9FFF;
+            box-shadow: inset 0 0 10px rgba(77, 159, 255, 0.1);
+        }
+
+        .dark .special-ability-box {
+            background-color: rgba(61, 123, 202, 0.15);
+            border-left: 3px solid #4D9FFF;
+            box-shadow: inset 0 0 10px rgba(77, 159, 255, 0.15);
+        }
+        
+        /* 能力值格子樣式 */
+        .stat-pill {
+            height: 16px;
+            width: 100%;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .dark .stat-pill {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-fill-pill {
+            height: 100%;
+            background-color: #4D9FFF;
+            border-radius: 8px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: width 0.5s ease;
+        }
+        
+        .stat-fill-pill.filled {
+            box-shadow: 0 0 8px rgba(77, 159, 255, 0.9);
+        }
+        
+        /* 載入指示器樣式 */
+        .loading-spinner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(77, 159, 255, 0.2);
+            border-top: 4px solid #4D9FFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .img-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 武器範圍圖示樣式 */
+        .range-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 16px;
+            border-radius: 3px;
+            background-color: rgba(76, 175, 80, 0.15);
+            position: relative;
+        }
+        
+        .range-icon.long::before,
+        .range-icon.long::after {
+            position: absolute;
+            color: #4CAF50;
+            font-size: 12px;
+            text-shadow: 0 0 4px rgba(76, 175, 80, 0.9);
+            line-height: 1;
+        }
+        
+        .range-icon.long::before {
+            content: '◄';
+            left: 4px;
+            top: 1px;
+        }
+        
+        .range-icon.long::after {
+            content: '►';
+            right: 4px;
+            top: 1px;
+        }
+        
+        .range-icon.long span {
+            position: absolute;
+            width: 8px;
+            height: 1px;
+            background-color: #4CAF50;
+            box-shadow: 0 0 4px rgba(76, 175, 80, 0.9);
+            top: 8px;
+        }
+        
+        .range-icon.long span:first-child {
+            left: 11px;
+        }
+        
+        .range-icon.long span:last-child {
+            right: 11px;
+        }
+        
+        .range-icon.medium::before,
+        .range-icon.medium::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border: 1px solid #4CAF50;
+            box-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+        }
+        
+        .range-icon.medium::before {
+            left: 6px;
+        }
+        
+        .range-icon.medium::after {
+            right: 6px;
+        }
+        
+        .range-icon.short::before,
+        .range-icon.short::after {
+            position: absolute;
+            color: #4CAF50;
+            font-size: 12px;
+            text-shadow: 0 0 4px rgba(76, 175, 80, 0.9);
+            line-height: 1;
+        }
+        
+        .range-icon.short::before {
+            content: '►';
+            left: 4px;
+            top: 1px;
+        }
+        
+        .range-icon.short::after {
+            content: '◄';
+            right: 4px;
+            top: 1px;
+        }
+        
+        .range-icon.short span {
+            position: absolute;
+            width: 8px;
+            height: 1px;
+            background-color: #4CAF50;
+            box-shadow: 0 0 4px rgba(76, 175, 80, 0.9);
+            top: 8px;
+        }
+        
+        .range-icon.short span:first-child {
+            left: 11px;
+        }
+        
+        .range-icon.short span:last-child {
+            right: 11px;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+    <div class="container max-w-lg mx-auto px-4 py-4">
+        <!-- 頁面標題區 -->
+        <div class="flex items-center justify-center mb-4">
+            <div class="flex items-center bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg py-2 px-4 shadow-md tech-shimmer glow-border">
+                <img src="./images/srwoglblogo.png" alt="SRW Logo" class="h-10 mr-3">
+                <h1 class="text-xl font-bold text-primary-glow" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">機體資料</h1>
+            </div>
+        </div>
+        <!-- 機體資料卡片 -->
+        <div class="bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg p-5 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border mb-4">
+            <!-- 機體標題區 -->
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="font-bold text-2xl text-primary-glow drop-shadow-lg" id="unit-name" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">古鐵</h1>
+                </div>
+                <div class="text-sm font-medium bg-primary bg-opacity-10 px-3 py-1 rounded-full text-primary-glow" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5); box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <span id="pilot-series-display">ATX</span> 系列
+                </div>
+            </div>
+
+            <!-- 機體圖片 -->
+            <div class="relative w-full h-[165px] flex items-center justify-center mb-4 overflow-hidden">
+                <div class="img-container">
+                    <div id="image-loading" class="loading-spinner"></div>
+                    <img id="unit-image" src="./unit/images/alteisen.png" alt="古鐵" class="max-h-full object-contain opacity-0 transition-opacity duration-300" style="z-index: 0;">
+                </div>
+            </div>
+
+            <!-- 主要數值區 -->
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">HP:</p>
+                    <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="hp-value" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">4200</p>
+                </div>
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">EN:</p>
+                    <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="en-value" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">120</p>
+                </div>
+                <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md flex items-center h-12">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium mr-2">裝甲:</p>
+                    <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="armor-value" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">1500</p>
+                </div>
+            </div>
+
+            <!-- 能力值格子區 -->
+            <div class="mb-4">
+                <div class="flex mb-1 gap-4">
+                    <div class="w-1/2">
+                        <span class="text-sm font-medium">行動點 (AP)</span>
+                    </div>
+                    <div class="w-1/2">
+                        <span class="text-sm font-medium">部署點 (DP)</span>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-1/2">
+                        <div class="flex space-x-1" id="ap-blocks">
+                            <!-- AP格子會由JavaScript生成 -->
+                        </div>
+                    </div>
+                    <div class="w-1/2">
+                        <div class="flex space-x-1" id="dp-blocks">
+                            <!-- DP格子會由JavaScript生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 特殊能力區 -->
+            <div class="special-ability-box p-3 rounded-r-md">
+                <h3 class="font-bold text-sm mb-2">特殊能力</h3>
+                <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                    <div class="flex items-center">
+                        <span class="mr-0.5">劍:</span>
+                        <span id="ability-a" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-0.5">盾:</span>
+                        <span id="ability-b" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-0.5">護罩:</span>
+                        <span id="ability-c" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-0.5">分身:</span>
+                        <span id="ability-d" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-0.5">變形:</span>
+                        <span id="ability-e" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-0.5">變身:</span>
+                        <span id="ability-f" class="font-medium"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 武器資訊區 -->
+            <div class="mt-4">
+                <div class="special-ability-box p-3 rounded-r-md mb-3">
+                    <h3 class="font-bold text-sm mb-2">武器資訊</h3>
+                    <div class="h-[115px] overflow-y-auto pr-1">
+                        <div class="grid grid-cols-2 gap-2" id="weapons-list">
+                            <!-- 武器列表會由JavaScript生成 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 武器參數顯示區 -->
+                <div class="special-ability-box p-3 rounded-r-md" id="weapon-details">
+                    <h3 class="font-bold text-sm mb-2">武器參數</h3>
+                    <div class="grid grid-cols-3 gap-x-3 gap-y-1.5 text-xs">
+                        <div>
+                            <span class="text-gray-800 dark:text-gray-200">攻擊力:</span>
+                            <span id="weapon-power" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-800 dark:text-gray-200">彈藥:</span>
+                            <span id="weapon-bullet" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-800 dark:text-gray-200">必要氣力:</span>
+                            <span id="weapon-ki" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-800 dark:text-gray-200">格．射:</span>
+                            <span id="weapon-type" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-800 dark:text-gray-200">EN消耗:</span>
+                            <span id="weapon-en" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-800 dark:text-gray-200">特效:</span>
+                            <span id="weapon-effect" class="ml-1 font-medium text-primary-glow"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部導航控制區 -->
+            <div class="mt-5 flex items-center justify-center">
+                <button id="prev-unit" class="bg-primary bg-opacity-10 h-9 w-9 rounded-full flex justify-center items-center mr-3 text-primary-glow hover:bg-opacity-20 transition-all" style="box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div class="relative">
+                    <input type="text" id="unit-id-search" placeholder="輸入ID..." class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 text-gray-800 dark:text-gray-200 rounded-lg py-2 px-4 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <button id="search-btn" class="absolute right-2 top-2 text-primary-glow">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <button id="next-unit" class="bg-primary bg-opacity-10 h-9 w-9 rounded-full flex justify-center items-center ml-3 text-primary-glow hover:bg-opacity-20 transition-all" style="box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        // 解析CSV數據
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            const results = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = line.split(',').map(v => v.trim());
+                const entry = {};
+                
+                for (let j = 0; j < headers.length; j++) {
+                    let value = values[j];
+                    // 嘗試轉換數值型字段
+                    if (!isNaN(value) && value !== '') {
+                        // 檢查是否為浮點數
+                        if (value.includes('.')) {
+                            value = parseFloat(value);
+                        } else {
+                            value = parseInt(value);
+                        }
+                    }
+                    entry[headers[j]] = value;
+                }
+                
+                results.push(entry);
+            }
+            
+            return results;
+        }
+        
+        // 全局變數存放所有機體資料
+        let allUnitsData = [];
+        let currentUnitIndex = 0;
+        
+        // 加載機體數據
+        async function loadUnitData(unitId = null) {
+            try {
+                // 如果還沒加載過全部資料
+                if (allUnitsData.length === 0) {
+                    const response = await fetch('./unit/unit.csv');
+                    if (!response.ok) {
+                        throw new Error(`Failed to load unit data: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const csvText = await response.text();
+                    allUnitsData = parseCSV(csvText);
+                    
+                    if (allUnitsData.length === 0) {
+                        throw new Error("No unit data found");
+                    }
+                }
+                
+                // 如果沒有指定ID，則使用第一個機體，否則根據ID查找機體
+                let unitData;
+                
+                if (unitId !== null) {
+                    // 嘗試找到指定ID的機體
+                    const unitIndex = allUnitsData.findIndex(unit => unit.id == unitId);
+                    if (unitIndex === -1) {
+                        alert(`找不到ID為 ${unitId} 的機體`);
+                        return;
+                    }
+                    unitData = allUnitsData[unitIndex];
+                    currentUnitIndex = unitIndex;
+                } else {
+                    // 使用當前索引的機體
+                    unitData = allUnitsData[currentUnitIndex];
+                }
+                
+                // 清空搜索欄位
+                document.getElementById('unit-id-search').value = '';
+                
+                // 更新箭頭按鈕的啟用/禁用狀態
+                updateNavigationButtons();
+                
+                // 加載武器數據
+                const weaponsData = await loadWeaponsData(unitData.nameId);
+                
+                // 渲染頁面
+                renderUnitData(unitData, weaponsData);
+                
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('unit-name').textContent = "載入錯誤";
+                // 顯示錯誤信息在頁面上
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'bg-negative bg-opacity-20 p-3 rounded-md text-negative-glow';
+                errorDiv.textContent = `無法載入數據: ${error.message}`;
+                document.querySelector('.container').appendChild(errorDiv);
+            }
+        }
+        
+        // 更新導航按鈕的狀態
+        function updateNavigationButtons() {
+            const prevButton = document.getElementById('prev-unit');
+            const nextButton = document.getElementById('next-unit');
+            
+            // 如果在第一個機體，禁用"上一個"按鈕
+            if (currentUnitIndex === 0) {
+                prevButton.classList.add('opacity-50', 'cursor-not-allowed');
+                prevButton.disabled = true;
+            } else {
+                prevButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                prevButton.disabled = false;
+            }
+            
+            // 如果在最後一個機體，禁用"下一個"按鈕
+            if (currentUnitIndex === allUnitsData.length - 1) {
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+                nextButton.disabled = true;
+            } else {
+                nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextButton.disabled = false;
+            }
+        }
+        
+        // 加載武器數據
+        async function loadWeaponsData(nameId) {
+            try {
+                // 注意: nameId 是變數，路徑是動態構建的
+                const response = await fetch(`./unit/${nameId}/weapon.csv`);
+                if (!response.ok) {
+                    throw new Error(`Failed to load weapon data: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                return parseCSV(csvText);
+                
+            } catch (error) {
+                console.error(`Error loading weapons for ${nameId}:`, error);
+                return []; // 如果無法加載，返回空數組
+            }
+        }
+        
+        // 使用加載的數據渲染頁面
+        function renderUnitData(unitData, weaponsData) {
+            // 填充頁面數據
+            document.getElementById('unit-name').textContent = unitData.name;
+            document.getElementById('pilot-series-display').textContent = unitData.pilot_series.toUpperCase();
+            document.getElementById('hp-value').textContent = unitData.hp;
+            document.getElementById('en-value').textContent = unitData.en;
+            document.getElementById('armor-value').textContent = unitData.armor;
+            
+            // 設置機體圖片
+            const imgPath = unitData.image_url || `./unit/images/${unitData.nameId}.png`;
+            const imageElement = document.getElementById('unit-image');
+            const loadingSpinner = document.getElementById('image-loading');
+            
+            // 圖片載入事件
+            imageElement.onload = function() {
+                // 隱藏載入指示器
+                loadingSpinner.style.display = 'none';
+                // 顯示圖片
+                imageElement.classList.remove('opacity-0');
+                imageElement.classList.add('opacity-100');
+            };
+            
+            // 圖片載入錯誤事件
+            imageElement.onerror = function() {
+                // 隱藏載入指示器
+                loadingSpinner.style.display = 'none';
+                // 顯示錯誤狀態
+                imageElement.src = ''; // 清除錯誤的圖片源
+                imageElement.classList.remove('opacity-0');
+                imageElement.classList.add('opacity-100');
+                
+                // 添加錯誤提示
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-negative-glow text-sm font-medium';
+                errorMsg.textContent = '無法載入圖片';
+                errorMsg.style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+                imageElement.parentNode.appendChild(errorMsg);
+            };
+            
+            // 設置圖片源和替代文字
+            imageElement.src = imgPath;
+            imageElement.alt = unitData.name;
+            
+            // 構建武器數據全局變數以供後續使用
+            window.weaponsData = weaponsData;
+        
+        // 解析特殊能力值
+        const parseSpecialAbilities = (spAbilValue) => {
+            // 確保值是六位數字的字符串
+            const spAbilStr = String(spAbilValue).padStart(6, '0');
+            
+            // 解析每個位置的能力值，轉換為對應的「有」或「無」
+            const abilityLabels = {
+                a: spAbilStr[0] === '1' ? '有' : '無',
+                b: spAbilStr[1] === '1' ? '有' : '無',
+                c: spAbilStr[2] === '1' ? '有' : '無',
+                d: spAbilStr[3] === '1' ? '有' : '無',
+                e: spAbilStr[4] === '1' ? '有' : '無',
+                f: spAbilStr[5] === '1' ? '有' : '無'
+            };
+            
+            // 設置每個能力的顯示值，為「有」添加藍色發光效果，為「無」添加暗紅色發光效果
+            document.getElementById('ability-a').textContent = abilityLabels.a;
+            if (abilityLabels.a === '有') {
+                document.getElementById('ability-a').classList.add('text-primary-glow');
+                document.getElementById('ability-a').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
+            } else {
+                document.getElementById('ability-a').classList.add('text-negative');
+                document.getElementById('ability-a').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+            }
+            
+            document.getElementById('ability-b').textContent = abilityLabels.b;
+            if (abilityLabels.b === '有') {
+                document.getElementById('ability-b').classList.add('text-primary-glow');
+                document.getElementById('ability-b').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
+            } else {
+                document.getElementById('ability-b').classList.add('text-negative');
+                document.getElementById('ability-b').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+            }
+            
+            document.getElementById('ability-c').textContent = abilityLabels.c;
+            if (abilityLabels.c === '有') {
+                document.getElementById('ability-c').classList.add('text-primary-glow');
+                document.getElementById('ability-c').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
+            } else {
+                document.getElementById('ability-c').classList.add('text-negative');
+                document.getElementById('ability-c').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+            }
+            
+            document.getElementById('ability-d').textContent = abilityLabels.d;
+            if (abilityLabels.d === '有') {
+                document.getElementById('ability-d').classList.add('text-primary-glow');
+                document.getElementById('ability-d').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
+            } else {
+                document.getElementById('ability-d').classList.add('text-negative');
+                document.getElementById('ability-d').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+            }
+            
+            document.getElementById('ability-e').textContent = abilityLabels.e;
+            if (abilityLabels.e === '有') {
+                document.getElementById('ability-e').classList.add('text-primary-glow');
+                document.getElementById('ability-e').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
+            } else {
+                document.getElementById('ability-e').classList.add('text-negative');
+                document.getElementById('ability-e').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+            }
+            
+            document.getElementById('ability-f').textContent = abilityLabels.f;
+            if (abilityLabels.f === '有') {
+                document.getElementById('ability-f').classList.add('text-primary-glow');
+                document.getElementById('ability-f').style.textShadow = '0 0 5px rgba(77, 159, 255, 0.7)';
+            } else {
+                document.getElementById('ability-f').classList.add('text-negative');
+                document.getElementById('ability-f').style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+            }
+        };
+        
+        // 調用特殊能力解析函數
+        parseSpecialAbilities(unitData.sp_abil);
+        
+        // 創建AP和DP格子
+        const createStatBlocks = (containerId, totalBlocks, value, blockWidth) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            // 計算需要完全填滿的格子數量
+            const fullBlocks = Math.floor(value);
+            // 計算剩餘的小數部分（用於半格）
+            const partialBlock = value - fullBlocks;
+            
+            for (let i = 0; i < totalBlocks; i++) {
+                const blockContainer = document.createElement('div');
+                blockContainer.className = 'stat-pill';
+                blockContainer.style.width = blockWidth;
+                
+                const fillBlock = document.createElement('div');
+                fillBlock.className = 'stat-fill-pill';
+                
+                // 決定每個格子的填充程度
+                if (i < fullBlocks) {
+                    // 完全填滿
+                    fillBlock.style.width = '100%';
+                    fillBlock.classList.add('filled');
+                } else if (i === fullBlocks && partialBlock > 0) {
+                    // 部分填滿（按照小數部分的比例）
+                    fillBlock.style.width = (partialBlock * 100) + '%';
+                    if (partialBlock >= 0.5) {
+                        fillBlock.classList.add('filled');
+                    }
+                } else {
+                    // 不填滿
+                    fillBlock.style.width = '0%';
+                }
+                
+                blockContainer.appendChild(fillBlock);
+                container.appendChild(blockContainer);
+            }
+        };
+        
+        // 創建AP格子：6格，在50%寬度的容器中，每格設置為較窄的寬度
+        createStatBlocks('ap-blocks', 6, unitData.ap, '15%');
+        
+        // 創建DP格子：5格，在50%寬度的容器中，並相應調整寬度
+        createStatBlocks('dp-blocks', 5, unitData.dp, '18%');
+
+        // 使用從CSV載入的武器數據
+        
+        // 生成武器列表
+        const renderWeapons = () => {
+            const weaponsList = document.getElementById('weapons-list');
+            weaponsList.innerHTML = '';
+            
+            weaponsData.forEach((weapon, index) => {
+                const weaponItem = document.createElement('div');
+                weaponItem.className = 'bg-white bg-opacity-15 dark:bg-gray-800 dark:bg-opacity-15 backdrop-blur-sm px-2 py-2 rounded-md cursor-pointer hover:bg-opacity-25 transition-all duration-200';
+                weaponItem.setAttribute('data-weapon-id', weapon.wId);
+                
+                // 武器名稱和射程
+                const weaponNameRange = document.createElement('div');
+                weaponNameRange.className = 'flex items-center justify-between';
+                
+                const weaponName = document.createElement('span');
+                weaponName.className = 'font-medium text-xs text-gray-800 dark:text-gray-200 truncate';
+                weaponName.style.maxWidth = '70%';
+                weaponName.textContent = weapon.wname;
+                
+                // 創建武器範圍圖標 - 更華麗的版本
+                const weaponRange = document.createElement('div');
+                weaponRange.className = 'range-icon ml-1 flex-shrink-0';
+                
+                // 根據範圍添加特定類
+                switch(weapon.range) {
+                    case 'L':
+                        // 長距離 - 箭頭指向外
+                        weaponRange.classList.add('long');
+                        // 添加兩條線
+                        const line1 = document.createElement('span');
+                        const line2 = document.createElement('span');
+                        weaponRange.appendChild(line1);
+                        weaponRange.appendChild(line2);
+                        break;
+                    case 'M':
+                        // 中距離 - 方形空框
+                        weaponRange.classList.add('medium');
+                        break;
+                    case 'S':
+                        // 短距離 - 箭頭指向內
+                        weaponRange.classList.add('short');
+                        // 添加兩條線
+                        const line3 = document.createElement('span');
+                        const line4 = document.createElement('span');
+                        weaponRange.appendChild(line3);
+                        weaponRange.appendChild(line4);
+                        break;
+                    default:
+                        // 如果是未知範圍，顯示文字
+                        weaponRange.textContent = weapon.range;
+                }
+                
+                weaponNameRange.appendChild(weaponName);
+                weaponNameRange.appendChild(weaponRange);
+                
+                weaponItem.appendChild(weaponNameRange);
+                
+                // 添加鼠標滑過/觸控事件
+                weaponItem.addEventListener('mouseenter', () => showWeaponDetails(weapon));
+                weaponItem.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // 防止觸控設備的點擊事件
+                    showWeaponDetails(weapon);
+                });
+                
+                weaponsList.appendChild(weaponItem);
+            });
+        };
+        
+        // 顯示武器詳細參數
+        const showWeaponDetails = (weapon) => {
+            const detailsContainer = document.getElementById('weapon-details');
+            detailsContainer.classList.remove('hidden');
+            
+            // 填充武器參數
+            document.getElementById('weapon-power').textContent = weapon.power;
+            
+            // 當彈藥為0時顯示--
+            document.getElementById('weapon-bullet').textContent = weapon.bullet === 0 ? '--' : weapon.bullet;
+            
+            // 當必要氣力為0時顯示--
+            document.getElementById('weapon-ki').textContent = weapon.ki_min === 0 ? '--' : weapon.ki_min;
+            
+            // 類型轉換為中文
+            let typeText = '';
+            switch(weapon.type) {
+                case 'shoot':
+                    typeText = '射擊';
+                    break;
+                case 'boxing':
+                    typeText = '格鬥';
+                    break;
+                default:
+                    typeText = weapon.type;
+            }
+            document.getElementById('weapon-type').textContent = typeText;
+            
+            // 當EN消耗為0時顯示--
+            document.getElementById('weapon-en').textContent = weapon.en_consume === 0 ? '--' : weapon.en_consume;
+            
+            // 特效轉換為中文
+            let effectText = '';
+            switch(weapon.speffect) {
+                case 'none':
+                    effectText = '無';
+                    break;
+                default:
+                    effectText = weapon.speffect;
+            }
+            document.getElementById('weapon-effect').textContent = effectText;
+        };
+        
+        // 初始化武器列表
+        renderWeapons();
+        
+        // 初始化時顯示第一個武器的參數
+        if (weaponsData.length > 0) {
+            showWeaponDetails(weaponsData[0]);
+        }
+        
+
+
+        // 設置為默認深色模式
+        document.documentElement.classList.add('dark');
+        
+        // 監聽系統深色/淺色模式變化 (可選，因為我們已經默認使用深色模式)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            // 不論系統設置如何，我們都維持深色模式
+            document.documentElement.classList.add('dark');
+        });
+        }
+        
+        // 直接定義導航函數
+        function goToPrevUnit() {
+            console.log("Going to previous unit, current index:", currentUnitIndex);
+            if (currentUnitIndex > 0) {
+                currentUnitIndex--;
+                loadUnitData();
+            }
+        }
+        
+        function goToNextUnit() {
+            console.log("Going to next unit, current index:", currentUnitIndex);
+            if (currentUnitIndex < allUnitsData.length - 1) {
+                currentUnitIndex++;
+                loadUnitData();
+            }
+        }
+        
+        // 頁面載入時執行
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log("DOM Content Loaded");
+            
+            // 初始加載第一個機體
+            await loadUnitData();
+            
+            // 直接綁定事件處理函數到按鈕
+            document.getElementById('prev-unit').addEventListener('click', goToPrevUnit);
+            document.getElementById('next-unit').addEventListener('click', goToNextUnit);
+            
+            // 搜索按鈕點擊事件
+            document.getElementById('search-btn').addEventListener('click', performSearch);
+            
+            // 搜索框回車事件
+            document.getElementById('unit-id-search').addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            console.log("All event listeners set up");
+        });
+        
+        // 執行搜索
+        function performSearch() {
+            const searchInput = document.getElementById('unit-id-search');
+            const unitId = searchInput.value.trim();
+            
+            if (unitId === '') {
+                return; // 如果搜索框為空，不執行搜索
+            }
+            
+            // 檢查輸入是否為數字
+            if (!/^\d+$/.test(unitId)) {
+                alert('請輸入有效的數字ID');
+                return;
+            }
+            
+            // 載入指定ID的機體
+            loadUnitData(parseInt(unitId));
+        }
+    </script>
+</body>
+</html>

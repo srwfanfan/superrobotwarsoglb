@@ -757,7 +757,13 @@
         
         // 生成各類行動指令
         function generateActionCommands() {
-            if (!pilotData) return;
+            console.log("開始生成行動指令");
+            if (!pilotData) {
+                console.error("無法生成指令: 駕駛員數據不存在");
+                return;
+            }
+            
+            console.log("駕駛員數據:", pilotData);
             
             // 解析駕駛員的行動指令
             const actionCommandsMap = {};
@@ -774,7 +780,19 @@
                 actionCommandsMap[cmd] = 0;
             });
             
+            // 為了測試，先設定一些默認值
+            actionCommandsMap['攻擊'] = 2;
+            actionCommandsMap['格鬥'] = 1;
+            actionCommandsMap['射擊'] = 1;
+            actionCommandsMap['防禦'] = 1;
+            actionCommandsMap['迴避'] = 1;
+            actionCommandsMap['前進'] = 1;
+            actionCommandsMap['後退'] = 1;
+            
+            // 解析真實數據 (如果可用)
             if (pilotData.action_commands) {
+                console.log("解析行動指令:", pilotData.action_commands);
+                
                 // 分割每個行動指令
                 const actionCommands = pilotData.action_commands.split('|');
                 
@@ -788,6 +806,8 @@
                     if (match) {
                         const commandName = match[1];
                         const levelStr = match[2];
+                        
+                        console.log(`解析指令: ${commandName}, 等級: ${levelStr}`);
                         
                         // 如果是 "-" 表示無法習得
                         if (levelStr === '-') {
@@ -810,14 +830,21 @@
                         
                         // 更新行動指令的可用次數
                         actionCommandsMap[commandName] = count;
+                        console.log(`${commandName} 可用次數: ${count}`);
                     }
                 });
+            } else {
+                console.warn("駕駛員無行動指令數據，使用默認設置");
             }
             
+            console.log("開始生成具體指令類別");
+            
             // 生成攻擊類指令
+            console.log("生成攻擊類指令");
             generateCommandCategory('attack-commands', ['攻擊', '格鬥', '射擊'], actionCommandsMap);
             
             // 生成防禦類指令
+            console.log("生成防禦類指令");
             const defenseCommands = ['防禦', '迴避', '盾牌', '切返'];
             // 如果機體有護罩能力，添加護罩指令
             if (hasSpecialAbility('c')) {
@@ -828,6 +855,7 @@
             generateCommandCategory('defense-commands', defenseCommands, actionCommandsMap);
             
             // 生成特殊類指令
+            console.log("生成特殊類指令");
             const specialCommands = ['瞄準', '底力'];
             // 如果機體有變形能力，添加變形指令
             if (hasSpecialAbility('e')) {
@@ -838,6 +866,7 @@
             generateCommandCategory('special-commands', specialCommands, actionCommandsMap);
             
             // 生成距離類指令
+            console.log("生成距離類指令");
             generateCommandCategory('distance-commands', ['前進', '後退', '突擊', '離脫'], actionCommandsMap);
             
             // 生成精神指令
@@ -1102,51 +1131,72 @@
         
         // 切換指令分類
         function switchCommandCategory(category) {
+            console.log(`切換到指令類別: ${category}`);
+            
             // 隱藏所有指令列表
             document.querySelectorAll('.command-list').forEach(list => {
                 list.classList.add('hidden');
             });
             
             // 顯示選中的指令列表
-            document.getElementById(`${category}-commands`).classList.remove('hidden');
+            const categoryElement = document.getElementById(`${category}-commands`);
+            if (categoryElement) {
+                categoryElement.classList.remove('hidden');
+                console.log(`顯示 ${category} 指令列表成功`);
+            } else {
+                console.error(`未找到 ${category} 指令列表元素`);
+            }
             
             // 更新類別按鈕的活動狀態
             document.querySelectorAll('.command-category').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            document.querySelector(`.command-category[data-category="${category}"]`).classList.add('active');
+            const activeButton = document.querySelector(`.command-category[data-category="${category}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
         }
         
         // 綁定事件監聽器
         function bindEventListeners() {
+            console.log("正在綁定事件監聽器");
+            
             // 指令類別切換
             document.querySelectorAll('.command-category').forEach(category => {
                 category.addEventListener('click', () => {
                     const categoryType = category.getAttribute('data-category');
+                    console.log(`點擊了類別：${categoryType}`);
                     switchCommandCategory(categoryType);
                 });
             });
             
             // 略過按鈕
-            document.querySelector('#skip-commands .command-item').addEventListener('click', () => {
-                // 更新當前回合的指令
-                selectedActions[currentRound - 1] = '略過';
-                
-                // 更新回合卡片
-                updateRoundCard(currentRound, '略過');
-                
-                // 移動到下一個回合
-                if (currentRound < 6) {
-                    currentRound++;
-                    updateActiveRound(currentRound);
-                }
-            });
+            const skipButton = document.querySelector('#skip-commands .command-item');
+            if(skipButton) {
+                skipButton.addEventListener('click', () => {
+                    console.log("點擊了略過按鈕");
+                    // 更新當前回合的指令
+                    selectedActions[currentRound - 1] = '略過';
+                    
+                    // 更新回合卡片
+                    updateRoundCard(currentRound, '略過');
+                    
+                    // 移動到下一個回合
+                    if (currentRound < 6) {
+                        currentRound++;
+                        updateActiveRound(currentRound);
+                    }
+                });
+            } else {
+                console.error("找不到略過按鈕");
+            }
             
             // 回合卡片點擊事件，允許直接選擇回合
             document.querySelectorAll('.round-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const round = parseInt(card.getAttribute('data-round'));
+                    console.log(`選擇回合：${round}`);
                     currentRound = round;
                     updateActiveRound(currentRound);
                 });

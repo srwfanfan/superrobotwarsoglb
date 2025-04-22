@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機體戰鬥</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4D9FFF',  // 更亮的藍色
+                        'primary-glow': '#7BB5FF',
+                        'negative': '#B32222', // 更暗的紅色
+                        'negative-glow': '#CC3333', // 偏暗的紅色
+                        secondary: '#2F5F9E',
+                        'dark-bg': '#1E1E24',
+                        'dark-card': '#303040',
+                        'light-card': '#E0E0E5',
+                        'tech-gray': '#74747A',
+                        'spirit-cmd': '#9C4AE8', // 精神指令紫色
+                        'spirit-glow': '#B279F5',
+                        'action-cmd': '#4AE89C', // 行動指令綠色
+                        'action-glow': '#79F5B2',
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'tech': '0 0 8px rgba(61, 123, 202, 0.4)',
+                        'tech-dark': '0 0 12px rgba(61, 123, 202, 0.6)',
+                        'spirit': '0 0 8px rgba(156, 74, 232, 0.4)',
+                        'action': '0 0 8px rgba(74, 232, 156, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+        :root {
+            --shimmer-color: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(61, 123, 202, 0.5);
+            --spirit-glow: rgba(156, 74, 232, 0.5);
+            --action-glow: rgba(74, 232, 156, 0.5);
+        }
+
+        .dark {
+            --shimmer-color: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(61, 123, 202, 0.5);
+            --spirit-glow: rgba(156, 74, 232, 0.5);
+            --action-glow: rgba(74, 232, 156, 0.5);
+        }
+        
+        body {
+            background-image: url('./unit/unitbg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .tech-shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, var(--shimmer-color), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .glow-border {
+            position: relative;
+        }
+
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(45deg, transparent, var(--border-glow), transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+        }
+
+        .spirit-border::before {
+            background: linear-gradient(45deg, transparent, var(--spirit-glow), transparent);
+        }
+
+        .action-border::before {
+            background: linear-gradient(45deg, transparent, var(--action-glow), transparent);
+        }
+
+        /* HP/EN進度條 */
+        .stat-bar {
+            position: relative;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: rgba(61, 123, 202, 0.2);
+        }
+
+        .stat-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .hp-fill {
+            background-color: #4CAF50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+        }
+
+        .en-fill {
+            background-color: #3D7BCA;
+            box-shadow: 0 0 8px rgba(61, 123, 202, 0.6);
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 200%;
+            }
+        }
+
+        /* 能力值格子樣式 */
+        .stat-pill {
+            height: 16px;
+            width: 100%;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .dark .stat-pill {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-fill-pill {
+            height: 100%;
+            background-color: #4D9FFF;
+            border-radius: 8px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: width 0.5s ease;
+        }
+        
+        .stat-fill-pill.filled {
+            box-shadow: 0 0 8px rgba(77, 159, 255, 0.9);
+        }
+        
+        /* 載入指示器樣式 */
+        .loading-spinner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(77, 159, 255, 0.2);
+            border-top: 4px solid #4D9FFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .img-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 指令標籤樣式 */
+        .cmd-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 3px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 0 4px rgba(77, 159, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .spirit-tag {
+            background-color: rgba(156, 74, 232, 0.15);
+            color: #B279F5;
+            text-shadow: 0 0 4px rgba(156, 74, 232, 0.5);
+        }
+        
+        .spirit-tag:hover {
+            background-color: rgba(156, 74, 232, 0.25);
+            box-shadow: 0 0 8px rgba(156, 74, 232, 0.5);
+        }
+        
+        .action-tag {
+            background-color: rgba(74, 232, 156, 0.15);
+            color: #79F5B2;
+            text-shadow: 0 0 4px rgba(74, 232, 156, 0.5);
+        }
+        
+        .action-tag:hover {
+            background-color: rgba(74, 232, 156, 0.25);
+            box-shadow: 0 0 8px rgba(74, 232, 156, 0.5);
+        }
+        
+        /* 回合卡片樣式 */
+        .round-card {
+            background-color: rgba(61, 123, 202, 0.1);
+            border: 1px solid rgba(77, 159, 255, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+            color: #7BB5FF;
+            text-shadow: 0 0 4px rgba(77, 159, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .round-card.active {
+            background-color: rgba(61, 123, 202, 0.25);
+            border-color: rgba(77, 159, 255, 0.7);
+            box-shadow: 0 0 8px rgba(77, 159, 255, 0.5);
+        }
+        
+        .round-card.spirit {
+            background-color: rgba(156, 74, 232, 0.15);
+            border-color: rgba(156, 74, 232, 0.3);
+            color: #B279F5;
+            text-shadow: 0 0 4px rgba(156, 74, 232, 0.5);
+        }
+        
+        .round-card.action {
+            background-color: rgba(74, 232, 156, 0.15);
+            border-color: rgba(74, 232, 156, 0.3);
+            color: #79F5B2;
+            text-shadow: 0 0 4px rgba(74, 232, 156, 0.5);
+        }
+        
+        /* 指令選單樣式 */
+        .command-panel {
+            position: relative;
+            background-color: rgba(61, 123, 202, 0.05);
+            border-radius: 8px;
+            min-height: 350px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .command-category {
+            cursor: pointer;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            background-color: rgba(77, 159, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .command-category:hover {
+            background-color: rgba(77, 159, 255, 0.2);
+        }
+        
+        .command-category.active {
+            background-color: rgba(77, 159, 255, 0.3);
+            box-shadow: 0 0 8px rgba(77, 159, 255, 0.5);
+        }
+        
+        .command-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .command-item {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            background-color: rgba(77, 159, 255, 0.1);
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .command-item:hover {
+            background-color: rgba(77, 159, 255, 0.2);
+        }
+        
+        .command-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .command-item.spirit {
+            background-color: rgba(156, 74, 232, 0.1);
+        }
+        
+        .command-item.spirit:hover {
+            background-color: rgba(156, 74, 232, 0.2);
+        }
+        
+        .command-item.action {
+            background-color: rgba(74, 232, 156, 0.1);
+        }
+        
+        .command-item.action:hover {
+            background-color: rgba(74, 232, 156, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+    <div class="container max-w-4xl mx-auto px-4 py-4">
+        <!-- 頁面標題區 -->
+        <div class="flex items-center justify-center mb-4">
+            <div class="flex items-center bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg py-2 px-4 shadow-md tech-shimmer glow-border">
+                <img src="./images/srwoglblogo.png" alt="SRW Logo" class="h-10 mr-3">
+                <h1 class="text-xl font-bold text-primary-glow" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">機體戰鬥</h1>
+            </div>
+        </div>
+        
+        <!-- 第一行：機體和駕駛員基本信息 -->
+        <div class="bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg p-4 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border mb-4">
+            <div class="flex flex-wrap">
+                <!-- 左側：機體與駕駛員名稱、距離 -->
+                <div class="w-full md:w-1/3 p-2">
+                    <div class="flex flex-col h-full justify-center">
+                        <div class="mb-3">
+                            <h2 class="font-bold text-xl text-primary-glow" id="unit-name" style="text-shadow: 0 0 8px rgba(77, 159, 255, 0.8);">古鐵</h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">型號: <span id="unit-model" class="text-primary-glow">ATX-001</span></p>
+                        </div>
+                        <div class="mb-3">
+                            <h3 class="font-medium text-lg" id="pilot-name">京宮秀人</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">等級: <span id="pilot-level" class="text-primary-glow">30</span></p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md">
+                            <p class="text-sm text-gray-700 dark:text-gray-300 font-medium">現在距離:</p>
+                            <p class="font-bold text-xl text-primary-glow drop-shadow-md" id="current-distance" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">3</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 中間：駕駛員圖片 -->
+                <div class="w-full md:w-1/3 p-2">
+                    <div class="relative w-full h-[165px] flex items-center justify-center overflow-hidden">
+                        <div class="img-container">
+                            <div id="image-loading" class="loading-spinner"></div>
+                            <img id="pilot-image" src="./pilot/images/kyosuke.png" alt="京宮秀人" class="max-h-full object-contain opacity-0 transition-opacity duration-300" style="z-index: 0;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右側：機體狀態 -->
+                <div class="w-full md:w-1/3 p-2">
+                    <div class="flex flex-col h-full justify-center space-y-4">
+                        <!-- HP條 -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium">HP:</span>
+                                <span class="text-sm font-medium"><span id="current-hp">4200</span>/<span id="max-hp">4200</span></span>
+                            </div>
+                            <div class="stat-bar">
+                                <div id="hp-fill" class="stat-fill hp-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- EN條 -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium">EN:</span>
+                                <span class="text-sm font-medium"><span id="current-en">120</span>/<span id="max-en">120</span></span>
+                            </div>
+                            <div class="stat-bar">
+                                <div id="en-fill" class="stat-fill en-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- AP顯示 -->
+                        <div>
+                            <div class="flex mb-1">
+                                <span class="text-sm font-medium">行動點 (AP)</span>
+                            </div>
+                            <div class="flex space-x-1" id="ap-blocks">
+                                <!-- AP格子會由JavaScript生成 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 裝甲值 -->
+                        <div class="bg-white bg-opacity-20 dark:bg-gray-800 dark:bg-opacity-20 backdrop-blur-sm px-3 py-2 rounded-md shadow-md">
+                            <p class="text-sm text-gray-700 dark:text-gray-300 font-medium">裝甲:</p>
+                            <p class="font-bold text-lg text-primary-glow drop-shadow-md" id="armor-value" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">1500</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 第二行：操作選項 -->
+        <div class="bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg p-4 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border mb-4">
+            <div class="flex items-center justify-center gap-4">
+                <button id="check-enemy-btn" class="bg-primary bg-opacity-10 px-4 py-2 rounded-lg flex items-center text-primary-glow hover:bg-opacity-20 transition-all" style="box-shadow: 0 0 8px rgba(77, 159, 255, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                    檢查敵人資料
+                </button>
+                <button id="start-battle-btn" class="bg-action-cmd bg-opacity-10 px-4 py-2 rounded-lg flex items-center text-action-glow hover:bg-opacity-20 transition-all" style="box-shadow: 0 0 8px rgba(74, 232, 156, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                    </svg>
+                    開始戰鬥
+                </button>
+            </div>
+        </div>
+        
+        <!-- 第三行：戰鬥指令與回合 -->
+        <div class="grid grid-cols-5 gap-4">
+            <!-- 左側：SP值和氣力 (1/5寬度) -->
+            <div class="col-span-1 bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg p-4 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border h-fit">
+                <div class="space-y-4">
+                    <!-- SP值 -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium">SP值:</span>
+                            <span id="sp-value" class="text-sm font-medium text-primary-glow">125</span>
+                        </div>
+                        <div class="stat-bar">
+                            <div id="sp-fill" class="stat-fill" style="width: 100%; background-color: #9C4AE8; box-shadow: 0 0 8px rgba(156, 74, 232, 0.6);"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 氣力 -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium">氣力:</span>
+                            <span id="morale-value" class="text-sm font-medium text-primary-glow">100</span>
+                        </div>
+                        <div class="stat-bar">
+                            <div id="morale-fill" class="stat-fill" style="width: 100%; background-color: #FF9800; box-shadow: 0 0 8px rgba(255, 152, 0, 0.6);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 中間：行動指令 (3/5寬度) -->
+            <div class="col-span-3 bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg p-4 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border">
+                <h3 class="font-bold text-lg mb-4 text-primary-glow" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">行動指令</h3>
+                
+                <!-- 指令類別按鈕 -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+                    <div class="command-category active" data-category="skip">
+                        <div class="text-sm font-medium">略過</div>
+                    </div>
+                    <div class="command-category" data-category="attack">
+                        <div class="text-sm font-medium">攻擊</div>
+                    </div>
+                    <div class="command-category" data-category="defense">
+                        <div class="text-sm font-medium">防禦</div>
+                    </div>
+                    <div class="command-category" data-category="special">
+                        <div class="text-sm font-medium">特殊</div>
+                    </div>
+                    <div class="command-category" data-category="distance">
+                        <div class="text-sm font-medium">距離</div>
+                    </div>
+                    <div class="command-category" data-category="spirit">
+                        <div class="text-sm font-medium">精神</div>
+                    </div>
+                </div>
+                
+                <!-- 指令列表容器 -->
+                <div class="command-panel p-4">
+                    <!-- 預設顯示略過指令 -->
+                    <div id="command-container" class="h-[250px] overflow-y-auto">
+                        <div id="skip-commands" class="command-list">
+                            <div class="command-item" data-command="略過">
+                                <div class="font-medium">略過</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">不執行任何動作</div>
+                            </div>
+                        </div>
+                        
+                        <div id="attack-commands" class="command-list hidden">
+                            <!-- 攻擊指令將由JavaScript生成 -->
+                        </div>
+                        
+                        <div id="defense-commands" class="command-list hidden">
+                            <!-- 防禦指令將由JavaScript生成 -->
+                        </div>
+                        
+                        <div id="special-commands" class="command-list hidden">
+                            <!-- 特殊指令將由JavaScript生成 -->
+                        </div>
+                        
+                        <div id="distance-commands" class="command-list hidden">
+                            <!-- 距離指令將由JavaScript生成 -->
+                        </div>
+                        
+                        <div id="spirit-commands" class="command-list hidden">
+                            <!-- 精神指令將由JavaScript生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右側：回合顯示 (1/5寬度) -->
+            <div class="col-span-1 bg-light-card bg-opacity-25 dark:bg-dark-card dark:bg-opacity-25 backdrop-blur-md rounded-lg p-4 shadow-lg dark:shadow-tech-dark tech-shimmer glow-border h-fit">
+                <h3 class="font-bold text-base mb-3 text-primary-glow" style="text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);">回合計劃</h3>
+                
+                <div id="rounds-container" class="space-y-2">
+                    <div class="round-card active" data-round="1">回合 1</div>
+                    <div class="round-card" data-round="2">回合 2</div>
+                    <div class="round-card" data-round="3">回合 3</div>
+                    <div class="round-card" data-round="4">回合 4</div>
+                    <div class="round-card" data-round="5">回合 5</div>
+                    <div class="round-card" data-round="6">回合 6</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 解析CSV數據
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            const results = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = line.split(',').map(v => v.trim());
+                const entry = {};
+                
+                for (let j = 0; j < headers.length; j++) {
+                    let value = values[j];
+                    // 嘗試轉換數值型字段
+                    if (!isNaN(value) && value !== '') {
+                        // 檢查是否為浮點數
+                        if (value.includes('.')) {
+                            value = parseFloat(value);
+                        } else {
+                            value = parseInt(value);
+                        }
+                    }
+                    entry[headers[j]] = value;
+                }
+                
+                results.push(entry);
+            }
+            
+            return results;
+        }
+        
+        // 全局變數
+        let unitData = null;
+        let pilotData = null;
+        let weaponsData = [];
+        let selectedActions = Array(6).fill('回合');
+        let currentRound = 1;
+        let totalAP = 0;
+        let usedAP = 0;
+        let maxSP = 0;
+        let currentSP = 0;
+        let currentMorale = 100;
+        
+        // 載入機體和駕駛員數據
+        async function loadBattleData() {
+            try {
+                // 載入機體數據
+                const unitResponse = await fetch('./unit/unit.csv');
+                if (!unitResponse.ok) {
+                    throw new Error(`Failed to load unit data: ${unitResponse.status} ${unitResponse.statusText}`);
+                }
+                
+                const unitCsvText = await unitResponse.text();
+                const allUnitsData = parseCSV(unitCsvText);
+                
+                // 找到 alteisen 機體
+                unitData = allUnitsData.find(unit => unit.nameId === 'alteisen');
+                
+                if (!unitData) {
+                    throw new Error("找不到古鐵(alteisen)機體數據");
+                }
+                
+                // 載入武器數據
+                const weaponsResponse = await fetch(`./unit/${unitData.nameId}/weapon.csv`);
+                if (weaponsResponse.ok) {
+                    const weaponsCsvText = await weaponsResponse.text();
+                    weaponsData = parseCSV(weaponsCsvText);
+                }
+                
+                // 載入駕駛員數據
+                const pilotResponse = await fetch('./pilot/pilot.csv');
+                if (!pilotResponse.ok) {
+                    throw new Error(`Failed to load pilot data: ${pilotResponse.status} ${pilotResponse.statusText}`);
+                }
+                
+                const pilotCsvText = await pilotResponse.text();
+                const allPilotsData = parseCSV(pilotCsvText);
+                
+                // 找到 kyousuke 駕駛員
+                pilotData = allPilotsData.find(pilot => pilot.p_nameId === 'kyosuke');
+                
+                if (!pilotData) {
+                    throw new Error("找不到京宮秀人(kyousuke)駕駛員數據");
+                }
+                
+                // 設置駕駛員等級為30
+                pilotData.level = 30;
+                
+                // 渲染頁面
+                renderBattleInterface();
+                
+            } catch (error) {
+                console.error("Error loading battle data:", error);
+                alert(`載入數據失敗: ${error.message}`);
+            }
+        }
+        
+        // 渲染戰鬥界面
+        function renderBattleInterface() {
+            if (!unitData || !pilotData) {
+                return;
+            }
+            
+            // 更新機體和駕駛員基本信息
+            document.getElementById('unit-name').textContent = unitData.name;
+            document.getElementById('unit-model').textContent = unitData.model || `${unitData.pilot_series.toUpperCase()}-001`;
+            document.getElementById('pilot-name').textContent = pilotData.p_name;
+            document.getElementById('pilot-level').textContent = pilotData.level;
+            
+            // 更新機體狀態
+            document.getElementById('current-hp').textContent = unitData.hp;
+            document.getElementById('max-hp').textContent = unitData.hp;
+            document.getElementById('current-en').textContent = unitData.en;
+            document.getElementById('max-en').textContent = unitData.en;
+            document.getElementById('armor-value').textContent = unitData.armor;
+            
+            // 計算AP值並渲染AP格子
+            totalAP = unitData.ap || 3;
+            renderAPBlocks(totalAP);
+            
+            // 計算SP值
+            maxSP = Math.min(255, 50 + Math.floor((pilotData.level/2)*5));
+            currentSP = maxSP;
+            document.getElementById('sp-value').textContent = currentSP;
+            
+            // 設置氣力初始值
+            currentMorale = 100;
+            document.getElementById('morale-value').textContent = currentMorale;
+            
+            // 載入駕駛員圖片
+            loadPilotImage();
+            
+            // 生成行動指令
+            generateActionCommands();
+            
+            // 綁定事件監聽器
+            bindEventListeners();
+        }
+        
+        // 載入駕駛員圖片
+        function loadPilotImage() {
+            const imgPath = pilotData.image_url || `./pilot/images/${pilotData.p_nameId}.png`;
+            const imageElement = document.getElementById('pilot-image');
+            const loadingSpinner = document.getElementById('image-loading');
+            
+            // 圖片載入事件
+            imageElement.onload = function() {
+                // 隱藏載入指示器
+                loadingSpinner.style.display = 'none';
+                // 顯示圖片
+                imageElement.classList.remove('opacity-0');
+                imageElement.classList.add('opacity-100');
+            };
+            
+            // 圖片載入錯誤事件
+            imageElement.onerror = function() {
+                // 隱藏載入指示器
+                loadingSpinner.style.display = 'none';
+                // 顯示錯誤狀態
+                imageElement.src = ''; // 清除錯誤的圖片源
+                imageElement.classList.remove('opacity-0');
+                imageElement.classList.add('opacity-100');
+                
+                // 添加錯誤提示
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-negative-glow text-sm font-medium';
+                errorMsg.textContent = '無法載入圖片';
+                errorMsg.style.textShadow = '0 0 5px rgba(179, 34, 34, 0.7)';
+                imageElement.parentNode.appendChild(errorMsg);
+            };
+            
+            // 設置圖片源和替代文字
+            imageElement.src = imgPath;
+            imageElement.alt = pilotData.p_name;
+        }
+        
+        // 渲染AP格子
+        function renderAPBlocks(apValue) {
+            const apContainer = document.getElementById('ap-blocks');
+            apContainer.innerHTML = '';
+            
+            for (let i = 0; i < 6; i++) {
+                const blockContainer = document.createElement('div');
+                blockContainer.className = 'stat-pill';
+                blockContainer.style.width = '15%';
+                
+                const fillBlock = document.createElement('div');
+                fillBlock.className = 'stat-fill-pill';
+                
+                // 決定每個格子的填充程度
+                if (i < apValue) {
+                    // 完全填滿
+                    fillBlock.style.width = '100%';
+                    fillBlock.classList.add('filled');
+                } else {
+                    // 不填滿
+                    fillBlock.style.width = '0%';
+                }
+                
+                blockContainer.appendChild(fillBlock);
+                apContainer.appendChild(blockContainer);
+            }
+        }
+        
+        // 生成各類行動指令
+        function generateActionCommands() {
+            if (!pilotData) return;
+            
+            // 解析駕駛員的行動指令
+            const actionCommandsMap = {};
+            
+            // 定義所有可能的行動指令
+            const allActionCommands = [
+                '攻擊', '格鬥', '射擊', '防禦', '迴避', 
+                '前進', '後退', '突擊', '離脫', '精神', 
+                '瞄準', '盾牌', '切返', '底力'
+            ];
+            
+            // 建立行動指令的可用次數映射
+            allActionCommands.forEach(cmd => {
+                actionCommandsMap[cmd] = 0;
+            });
+            
+            if (pilotData.action_commands) {
+                // 分割每個行動指令
+                const actionCommands = pilotData.action_commands.split('|');
+                
+                // 處理每個行動指令及其習得等級
+                actionCommands.forEach(commandInfo => {
+                    const commandData = commandInfo.trim();
+                    if (!commandData) return;
+                    
+                    // 匹配指令名稱和習得等級，例如 "攻擊(1-10-23)"
+                    const match = commandData.match(/(.+)\(([^)]+)\)/);
+                    if (match) {
+                        const commandName = match[1];
+                        const levelStr = match[2];
+                        
+                        // 如果是 "-" 表示無法習得
+                        if (levelStr === '-') {
+                            return;
+                        }
+                        
+                        // 分割多個習得等級
+                        const requiredLevels = levelStr.split("-").map(level => {
+                            if (!level.trim()) return null;
+                            return parseInt(level.trim());
+                        }).filter(level => level !== null);
+                        
+                        // 計算駕駛員當前等級可以習得該指令的次數
+                        let count = 0;
+                        requiredLevels.forEach(reqLevel => {
+                            if (pilotData.level >= reqLevel) {
+                                count++;
+                            }
+                        });
+                        
+                        // 更新行動指令的可用次數
+                        actionCommandsMap[commandName] = count;
+                    }
+                });
+            }
+            
+            // 生成攻擊類指令
+            generateCommandCategory('attack-commands', ['攻擊', '格鬥', '射擊'], actionCommandsMap);
+            
+            // 生成防禦類指令
+            const defenseCommands = ['防禦', '迴避', '盾牌', '切返'];
+            // 如果機體有護罩能力，添加護罩指令
+            if (hasSpecialAbility('c')) {
+                defenseCommands.push('護罩');
+                // 護罩指令只能使用一次
+                actionCommandsMap['護罩'] = 1;
+            }
+            generateCommandCategory('defense-commands', defenseCommands, actionCommandsMap);
+            
+            // 生成特殊類指令
+            const specialCommands = ['瞄準', '底力'];
+            // 如果機體有變形能力，添加變形指令
+            if (hasSpecialAbility('e')) {
+                specialCommands.push('變形');
+                // 變形指令只能使用一次
+                actionCommandsMap['變形'] = 1;
+            }
+            generateCommandCategory('special-commands', specialCommands, actionCommandsMap);
+            
+            // 生成距離類指令
+            generateCommandCategory('distance-commands', ['前進', '後退', '突擊', '離脫'], actionCommandsMap);
+            
+            // 生成精神指令
+            generateSpiritCommands();
+        }
+        
+        // 檢查機體是否有特定特殊能力
+        function hasSpecialAbility(abilityKey) {
+            if (!unitData || !unitData.sp_abil) return false;
+            
+            // 確保值是六位數字的字符串
+            const spAbilStr = String(unitData.sp_abil).padStart(6, '0');
+            
+            // 映射能力鍵到索引
+            const keyToIndex = {
+                'a': 0, // 劍
+                'b': 1, // 盾
+                'c': 2, // 護罩
+                'd': 3, // 分身
+                'e': 4, // 變形
+                'f': 5  // 變身
+            };
+            
+            const index = keyToIndex[abilityKey];
+            return spAbilStr[index] === '1';
+        }
+        
+        // 生成指令類別
+        function generateCommandCategory(containerId, commands, commandsMap) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            commands.forEach(command => {
+                const count = commandsMap[command] || 0;
+                
+                const commandItem = document.createElement('div');
+                commandItem.classList.add('command-item');
+                
+                if (count === 0) {
+                    commandItem.classList.add('disabled');
+                } else {
+                    commandItem.setAttribute('data-command', command);
+                    commandItem.addEventListener('click', () => selectCommand(command));
+                }
+                
+                // 根據不同指令類型添加不同樣式
+                if (['變形', '護罩'].includes(command)) {
+                    commandItem.classList.add('action');
+                }
+                
+                const nameElement = document.createElement('div');
+                nameElement.className = 'font-medium';
+                nameElement.textContent = `${command} ${count > 0 ? `(${count})` : ''}`;
+                
+                const descElement = document.createElement('div');
+                descElement.className = 'text-xs text-gray-500 dark:text-gray-400';
+                
+                // 根據不同指令添加描述
+                switch (command) {
+                    case '攻擊':
+                        descElement.textContent = '基本攻擊行動';
+                        break;
+                    case '格鬥':
+                        descElement.textContent = '近距離格鬥攻擊';
+                        break;
+                    case '射擊':
+                        descElement.textContent = '中、遠距離射擊攻擊';
+                        break;
+                    case '防禦':
+                        descElement.textContent = '提升防禦力';
+                        break;
+                    case '迴避':
+                        descElement.textContent = '提升迴避率';
+                        break;
+                    case '前進':
+                        descElement.textContent = '前進1格距離';
+                        break;
+                    case '後退':
+                        descElement.textContent = '後退1格距離';
+                        break;
+                    case '突擊':
+                        descElement.textContent = '前進2格距離';
+                        break;
+                    case '離脫':
+                        descElement.textContent = '後退2格距離';
+                        break;
+                    case '精神':
+                        descElement.textContent = '使用精神指令';
+                        break;
+                    case '瞄準':
+                        descElement.textContent = '提升命中率';
+                        break;
+                    case '盾牌':
+                        descElement.textContent = '使用盾牌防禦';
+                        break;
+                    case '切返':
+                        descElement.textContent = '防禦並反擊';
+                        break;
+                    case '底力':
+                        descElement.textContent = '提升全能力';
+                        break;
+                    case '護罩':
+                        descElement.textContent = '啟動護罩防禦';
+                        break;
+                    case '變形':
+                        descElement.textContent = '變形改變機體能力';
+                        break;
+                    default:
+                        descElement.textContent = '執行特殊行動';
+                }
+                
+                commandItem.appendChild(nameElement);
+                commandItem.appendChild(descElement);
+                container.appendChild(commandItem);
+            });
+        }
+        
+        // 生成精神指令
+        function generateSpiritCommands() {
+            if (!pilotData) return;
+            
+            const container = document.getElementById('spirit-commands');
+            container.innerHTML = '';
+            
+            // 解析精神指令
+            if (pilotData.spirit_commands) {
+                // 分割每個精神指令
+                const spiritCommands = pilotData.spirit_commands.split('|');
+                
+                // 處理每個精神指令及其習得等級
+                spiritCommands.forEach(commandInfo => {
+                    const commandData = commandInfo.trim();
+                    if (!commandData) return;
+                    
+                    // 匹配指令名稱和習得等級，例如 "加速(5)"
+                    const match = commandData.match(/(.+)\((\d+)\)/);
+                    if (match) {
+                        const commandName = match[1];
+                        const requiredLevel = parseInt(match[2]);
+                        
+                        // 如果當前等級不足以習得該指令，跳過
+                        if (pilotData.level < requiredLevel) return;
+                        
+                        const commandItem = document.createElement('div');
+                        commandItem.classList.add('command-item', 'spirit');
+                        commandItem.setAttribute('data-command', commandName);
+                        commandItem.setAttribute('data-sp-cost', '20'); // 假設所有精神指令消耗20 SP
+                        
+                        // 如果SP不足，禁用精神指令
+                        if (currentSP < 20) {
+                            commandItem.classList.add('disabled');
+                        } else {
+                            commandItem.addEventListener('click', () => selectSpiritCommand(commandName, 20));
+                        }
+                        
+                        const nameElement = document.createElement('div');
+                        nameElement.className = 'font-medium';
+                        nameElement.textContent = commandName;
+                        
+                        const costElement = document.createElement('div');
+                        costElement.className = 'text-xs text-spirit-glow';
+                        costElement.textContent = 'SP消耗: 20';
+                        
+                        commandItem.appendChild(nameElement);
+                        commandItem.appendChild(costElement);
+                        container.appendChild(commandItem);
+                    }
+                });
+            }
+        }
+        
+        // 選擇普通指令
+        function selectCommand(command) {
+            if (usedAP >= totalAP) {
+                alert(`已達到最大AP限制(${totalAP})，無法選擇更多指令`);
+                return;
+            }
+            
+            // 更新當前回合的指令
+            selectedActions[currentRound - 1] = command;
+            
+            // 更新回合卡片
+            updateRoundCard(currentRound, command);
+            
+            // 增加已使用AP
+            usedAP++;
+            
+            // 移動到下一個回合
+            if (currentRound < 6) {
+                currentRound++;
+                updateActiveRound(currentRound);
+            }
+        }
+        
+        // 選擇精神指令
+        function selectSpiritCommand(command, spCost) {
+            if (usedAP >= totalAP) {
+                alert(`已達到最大AP限制(${totalAP})，無法選擇更多指令`);
+                return;
+            }
+            
+            if (currentSP < spCost) {
+                alert(`SP不足，無法使用精神指令 ${command}`);
+                return;
+            }
+            
+            // 更新當前回合的指令
+            selectedActions[currentRound - 1] = command;
+            
+            // 更新回合卡片
+            updateRoundCard(currentRound, command, 'spirit');
+            
+            // 扣除SP
+            currentSP -= spCost;
+            document.getElementById('sp-value').textContent = currentSP;
+            document.getElementById('sp-fill').style.width = `${(currentSP / maxSP) * 100}%`;
+            
+            // 增加已使用AP
+            usedAP++;
+            
+            // 重新生成精神指令列表以更新可用性
+            generateSpiritCommands();
+            
+            // 移動到下一個回合
+            if (currentRound < 6) {
+                currentRound++;
+                updateActiveRound(currentRound);
+            }
+        }
+        
+        // 更新回合卡片
+        function updateRoundCard(round, command, type = 'action') {
+            const roundCard = document.querySelector(`.round-card[data-round="${round}"]`);
+            
+            // 移除之前的類別
+            roundCard.classList.remove('active', 'spirit', 'action');
+            
+            // 添加新的類別
+            if (type === 'spirit') {
+                roundCard.classList.add('spirit');
+            } else {
+                roundCard.classList.add('action');
+            }
+            
+            // 更新內容
+            roundCard.textContent = command;
+        }
+        
+        // 更新當前活動回合
+        function updateActiveRound(round) {
+            // 移除所有回合卡片的active類
+            document.querySelectorAll('.round-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // 給當前回合添加active類
+            const currentCard = document.querySelector(`.round-card[data-round="${round}"]`);
+            if (currentCard) {
+                currentCard.classList.add('active');
+            }
+        }
+        
+        // 切換指令分類
+        function switchCommandCategory(category) {
+            // 隱藏所有指令列表
+            document.querySelectorAll('.command-list').forEach(list => {
+                list.classList.add('hidden');
+            });
+            
+            // 顯示選中的指令列表
+            document.getElementById(`${category}-commands`).classList.remove('hidden');
+            
+            // 更新類別按鈕的活動狀態
+            document.querySelectorAll('.command-category').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelector(`.command-category[data-category="${category}"]`).classList.add('active');
+        }
+        
+        // 綁定事件監聽器
+        function bindEventListeners() {
+            // 指令類別切換
+            document.querySelectorAll('.command-category').forEach(category => {
+                category.addEventListener('click', () => {
+                    const categoryType = category.getAttribute('data-category');
+                    switchCommandCategory(categoryType);
+                });
+            });
+            
+            // 略過按鈕
+            document.querySelector('#skip-commands .command-item').addEventListener('click', () => {
+                // 更新當前回合的指令
+                selectedActions[currentRound - 1] = '略過';
+                
+                // 更新回合卡片
+                updateRoundCard(currentRound, '略過');
+                
+                // 移動到下一個回合
+                if (currentRound < 6) {
+                    currentRound++;
+                    updateActiveRound(currentRound);
+                }
+            });
+            
+            // 回合卡片點擊事件，允許直接選擇回合
+            document.querySelectorAll('.round-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const round = parseInt(card.getAttribute('data-round'));
+                    currentRound = round;
+                    updateActiveRound(currentRound);
+                });
+            });
+            
+            // 檢查敵人資料按鈕
+            document.getElementById('check-enemy-btn').addEventListener('click', () => {
+                alert('敵人資料功能尚未實現');
+            });
+            
+            // 開始戰鬥按鈕
+            document.getElementById('start-battle-btn').addEventListener('click', () => {
+                alert('戰鬥功能尚未實現，已選擇的行動: ' + selectedActions.join(', '));
+            });
+        }
+        
+        // 設置為默認深色模式
+        document.documentElement.classList.add('dark');
+        
+        // 頁面載入時執行
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBattleData();
+        });
+    </script>
+</body>
+</html>

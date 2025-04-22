@@ -630,7 +630,7 @@
                 const allPilotsData = parseCSV(pilotCsvText);
                 
                 // 找到 kyousuke 駕駛員
-                pilotData = allPilotsData.find(pilot => pilot.p_nameId === 'kyosuke');
+                pilotData = allPilotsData.find(pilot => pilot.p_nameId === 'kyousuke');
                 
                 if (!pilotData) {
                     throw new Error("找不到京宮秀人(kyousuke)駕駛員數據");

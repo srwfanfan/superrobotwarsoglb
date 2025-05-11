@@ -285,6 +285,11 @@
             border-radius: 6px;
             background-color: rgba(77, 159, 255, 0.1);
             transition: all 0.3s ease;
+            display: block; /* 确保按钮是块级元素 */
+            width: 100%;
+            text-align: left;
+            border: none; /* 移除默认按钮边框 */
+            outline: none; /* 移除默认按钮焦点轮廓 */
         }
         
         .command-category:hover {
@@ -294,6 +299,11 @@
         .command-category.active {
             background-color: rgba(77, 159, 255, 0.3);
             box-shadow: 0 0 8px rgba(77, 159, 255, 0.5);
+        }
+        
+        .command-category:focus {
+            box-shadow: 0 0 0 2px rgba(77, 159, 255, 0.6);
+            outline: none;
         }
         
         .command-list {
@@ -478,24 +488,24 @@
                 
                 <!-- 指令類別按鈕 -->
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
-                    <div class="command-category active" data-category="skip">
+                    <button type="button" class="command-category active" data-category="skip">
                         <div class="text-sm font-medium">略過</div>
-                    </div>
-                    <div class="command-category" data-category="attack">
+                    </button>
+                    <button type="button" class="command-category" data-category="attack">
                         <div class="text-sm font-medium">攻擊</div>
-                    </div>
-                    <div class="command-category" data-category="defense">
+                    </button>
+                    <button type="button" class="command-category" data-category="defense">
                         <div class="text-sm font-medium">防禦</div>
-                    </div>
-                    <div class="command-category" data-category="special">
+                    </button>
+                    <button type="button" class="command-category" data-category="special">
                         <div class="text-sm font-medium">特殊</div>
-                    </div>
-                    <div class="command-category" data-category="distance">
+                    </button>
+                    <button type="button" class="command-category" data-category="distance">
                         <div class="text-sm font-medium">距離</div>
-                    </div>
-                    <div class="command-category" data-category="spirit">
+                    </button>
+                    <button type="button" class="command-category" data-category="spirit">
                         <div class="text-sm font-medium">精神</div>
-                    </div>
+                    </button>
                 </div>
                 
                 <!-- 指令列表容器 -->
